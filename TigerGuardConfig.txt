@@ -1,0 +1,14 @@
+#TigerGuard Config File
+#Edit the below values so they fit your usecase, do not share these for security reasons
+
+#Connection Info - sample info provided for what the defaults cling to for MariaDB
+address: localhost
+port: 3306
+
+#Discord Bot API Token Info
+botToken: YOUR_DISCORD_BOT_API_KEY
+
+#MariaDB Database Connection Info
+databaseName: YOUR_DATABASE_NAME
+databaseUsername: YOUR_DATABASES_BOT_USER
+databasePassword: YOUR_DATABASES_BOT_USER_PASSWORD
