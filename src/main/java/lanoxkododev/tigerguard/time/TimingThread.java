@@ -55,7 +55,10 @@ public class TimingThread extends Thread {
 		dates.checkDateStatus(day, month, year);
 		timeEvenSync(date.getSecond());
 
-		if (date.getHour() == 0) nearMidnight = true;
+		if (date.getHour() == 0)
+		{
+			nearMidnight = true;
+		}
 
 		while (!stopStatus)
 		{
@@ -73,7 +76,10 @@ public class TimingThread extends Thread {
 			}
 
 			//Reset midnight boolean
-			if (nearMidnight && date.getHour() != 0) nearMidnight = false;
+			if (nearMidnight && date.getHour() != 0)
+			{
+				nearMidnight = false;
+			}
 
 			sleepEnactor(600000);
 		}
@@ -96,10 +102,16 @@ public class TimingThread extends Thread {
 		polls.beginPollReview(firstBoot);
 		firstBoot = false;
 
-		if (seconds != 0) sleepEnactor(1000*(59-seconds));
+		if (seconds != 0)
+		{
+			sleepEnactor(1000*(59-seconds));
+		}
 
 		int minutes = ZonedDateTime.now().getMinute();
-		if (minutes % 10 != 0) sleepEnactor(60000 * (10 - (minutes - (10 * (minutes / 10)))));
+		if (minutes % 10 != 0)
+		{
+			sleepEnactor(60000 * (10 - (minutes - (10 * (minutes / 10)))));
+		}
 	}
 
 	/**
@@ -115,7 +127,10 @@ public class TimingThread extends Thread {
 		}
 		catch (InterruptedException e)
 		{
-			if (!stopStatus) logger.logErr(LogType.WARNING, "Failure setting time thread to sleep with value of " + value, null, e);
+			if (!stopStatus)
+			{
+				logger.logErr(LogType.WARNING, "Failure setting time thread to sleep with value of " + value, null, e);
+			}
 		}
 	}
 
@@ -125,11 +140,11 @@ public class TimingThread extends Thread {
 		{
 			tigerguardDB.createTable("voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45));");
 		}
-		
+
 		ArrayList<Triplet<Long, Long, Long>> voiceItems = tigerguardDB.bootVoiceVerify();
 
 		Long currentTime = System.currentTimeMillis();
-		
+
 		JDA jda = TigerGuard.TigerGuardInstance.getJDA();
 		//JDA jda = TigerGuard.getTigerGuard().getJDA();
 
@@ -150,10 +165,19 @@ public class TimingThread extends Thread {
 
 						if (calc >= 1)
 						{
-							if (!tigerguardDB.checkRow(guild + "xp", "id", member)) tigerguardDB.insertUserIntoGuildXPTable(guild + "xp", member);
+							if (!tigerguardDB.checkRow(guild + "xp", "id", member))
+							{
+								tigerguardDB.insertUserIntoGuildXPTable(guild + "xp", member);
+							}
 
-							if (calc <= 56) tigerguardDB.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * calc), null, null);
-							else tigerguardDB.updateGuildRankXp(guildInstance, a, Math.round(15 * 56), null, null);
+							if (calc <= 56)
+							{
+								tigerguardDB.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * calc), null, null);
+							}
+							else
+							{
+								tigerguardDB.updateGuildRankXp(guildInstance, a, Math.round(15 * 56), null, null);
+							}
 						}
 
 						tigerguardDB.basicDelete("voiceTracker", "id", member);

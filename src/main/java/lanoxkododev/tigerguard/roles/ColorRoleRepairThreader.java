@@ -43,7 +43,7 @@ public class ColorRoleRepairThreader extends Thread {
 		{
 			tigerguardDB.createGuildColorRolesEntry(event.getGuild().getIdLong());
 		}
-		
+
 		//Storage for the roles we know
 		LinkedHashMap<Integer, Long> roleItems = new LinkedHashMap<>();
 		List<Role> presentRoles = guild.getRoles();

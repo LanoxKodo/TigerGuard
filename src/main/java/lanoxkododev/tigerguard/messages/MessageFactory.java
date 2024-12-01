@@ -31,7 +31,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 
 public class MessageFactory {
-	
+
 	Font font40p = new Font("Fira Sans SemiBold", Font.PLAIN, 40);
     Font font30p = new Font("Fira Sans SemiBold", Font.PLAIN, 30);
     Font font30i = new Font("Fira Sans SemiBold", Font.ITALIC, 30);
@@ -127,7 +127,9 @@ public class MessageFactory {
 	public byte[] createRankImage(Member member, String levelRoleName, int level, int xp, int nextXP, int prevXP, boolean isMaxLevel) throws IOException
 	{
         if (member == null)
-            return new byte[128];
+		{
+			return new byte[128];
+		}
 
         BufferedImage background = resize(new Pages().getBufferedImage(TigerGuardDB.getTigerGuardDB().getUserRankImage(member.getIdLong())), 700, 300);
         BufferedImage base = new BufferedImage(700, 300, BufferedImage.TYPE_INT_ARGB);
@@ -223,7 +225,10 @@ public class MessageFactory {
         int barWidth = (int)(xpCenterX*.9);
         double progressPercent = 0.0;
 
-        if (xp != 0) progressPercent = 1 - (((double)xp-nextXP)/(prevXP-nextXP));
+        if (xp != 0)
+		{
+			progressPercent = 1 - (((double)xp-nextXP)/(prevXP-nextXP));
+		}
 
         //Base bar
         base2D.setColor(Color.BLACK);
@@ -266,8 +271,14 @@ public class MessageFactory {
         	}
         	catch (Exception e) {}
 
-        	if (!found.find()) matchedEvent = true;
-        	else nameRevised += membername.charAt(a);
+        	if (!found.find())
+			{
+				matchedEvent = true;
+			}
+			else
+			{
+				nameRevised += membername.charAt(a);
+			}
         }
 
         if (!matchedEvent)
@@ -325,7 +336,9 @@ public class MessageFactory {
 	public static BufferedImage resize(BufferedImage inputImage, int scaledWidth, int scaledHeight)
 	{
         if (inputImage == null)
-            return null;
+		{
+			return null;
+		}
 
         if (inputImage.getWidth() == scaledWidth && inputImage.getHeight() == scaledHeight) {
             return inputImage;

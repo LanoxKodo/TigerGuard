@@ -42,7 +42,7 @@ public class RankCustomization implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -61,7 +61,7 @@ public class RankCustomization implements TGCommand {
 		buttons.add(Button.secondary("rankcustom-next", "next").withEmoji(Emoji.fromFormatted("▶")));
 		buttons.add(Button.secondary("rankcustom-end", "last").withEmoji(Emoji.fromFormatted("⏩")));
 		buttons.add(Button.success("rankcustom-select", "select current").withEmoji(Emoji.fromFormatted("⏺")));
-		
+
 		event.getHook().sendMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(0))).setFiles(FileUpload.fromData(pages.getImageAsStream(0), "image.png")).setComponents(ActionRow.of(buttons)).queue();
 	}
 }

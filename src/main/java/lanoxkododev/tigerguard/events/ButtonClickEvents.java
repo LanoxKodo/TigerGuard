@@ -61,8 +61,11 @@ public class ButtonClickEvents extends ListenerAdapter {
 		String buttonType = buttonDivider[0];
 		String buttonVariant = buttonDivider[1];
 
-		if (TigerGuard.isDebugMode()) logger.log(LogType.INFO, "Button pushed: " + buttonVariant + " && val=" + val);
-		
+		if (TigerGuard.isDebugMode())
+		{
+			logger.log(LogType.INFO, "Button pushed: " + buttonVariant + " && val=" + val);
+		}
+
 		switch (buttonType)
 		{
 			case "poll":
@@ -174,13 +177,12 @@ public class ButtonClickEvents extends ListenerAdapter {
 				}
 				break;
 			case "nsfw":
-				
 				Long nsfwRoleID = Long.valueOf(tigerGuardDB.getGuildNSFWStatusRole(guild.getIdLong()));
-				
+
 				if (nsfwRoleID != null)
 				{
 					List<Role> memberRoles = member.getRoles();
-					
+
 					switch (buttonVariant)
 					{
 						case "provision":
@@ -243,32 +245,32 @@ public class ButtonClickEvents extends ListenerAdapter {
 						{
 							if (event.getButton().getLabel().contains("Pause"))
 							{
-								AudioComplex.getInstance().getOrCreateMusicManager(guild).setPauseStatus(true);
+								AudioComplex.getInstance().acquireMusicManager(guild).setPauseStatus(true);
 								event.editButton(Button.primary("music-pause-resume", "Resume").withEmoji(Emoji.fromCustom(":play:", 1040148261702471741L, false))).queue();
 							}
 							else
 							{
-								AudioComplex.getInstance().getOrCreateMusicManager(guild).setPauseStatus(false);
+								AudioComplex.getInstance().acquireMusicManager(guild).setPauseStatus(false);
 								event.editButton(Button.primary("music-pause-resume", "Pause").withEmoji(Emoji.fromCustom(":pause:", 1040148262449061898L, false))).queue();
 							}
 						}
 						break;
 					case "skip":
 						if (!member.getVoiceState().inAudioChannel()) exceptionReason(event);
-						AudioComplex.getInstance().getOrCreateMusicManager(guild).skip();
+						
+						AudioComplex.getInstance().acquireMusicManager(guild).skip();
 						event.getMessage().delete().queue();
 						event.replyEmbeds(embedder.simpleEmbed(null, "Skipping to next song", TigerGuard.getTigerGuard().getSelf().getEffectiveAvatarUrl(),
 							ColorCodes.CONFIRMATION, "This message will auto-delete in 20 seconds.")).queue(a -> { a.deleteOriginal().queueAfter(20,  TimeUnit.SECONDS); });
-						//TODO else PlayerLogic.getInstance().skip(guild); - might be re-added later, keeping reference as reminder
+						//TODO else PlayerLogic.getInstance().skip(guild); - reference for how the future skip logic might be handled
 						break;
 					case "stop":
 						if (!member.getVoiceState().inAudioChannel()) exceptionReason(event);
 						else
 						{
 							AudioComplex.getInstance().getClient().getOrCreateLink(event.getGuild().getIdLong()).destroy();
-							AudioComplex.getInstance().getOrCreateMusicManager(guild).stop();
-							event.getMessage().delete().queue();
-							
+							AudioComplex.getInstance().acquireMusicManager(guild).stop();
+
 							event.replyEmbeds(embedder.simpleEmbed(null, "║ Leaving channel due to stop button usage", TigerGuard.getTigerGuard().getSelf().getEffectiveAvatarUrl(),
 								ColorCodes.CONFIRMATION, "Shutting down audio instance and queue.\nThis message will auto-delete in 20 seconds."))
 								.queue(a -> { a.deleteOriginal().queueAfter(20,  TimeUnit.SECONDS); });

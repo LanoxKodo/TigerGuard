@@ -34,7 +34,7 @@ public class PingZeTiger implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{

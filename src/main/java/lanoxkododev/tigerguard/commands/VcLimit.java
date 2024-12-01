@@ -42,7 +42,7 @@ public class VcLimit implements TGCommand {
 
 		return options;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -52,10 +52,7 @@ public class VcLimit implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if(!event.getMember().getVoiceState().inAudioChannel())
-		{
-			event.replyEmbeds(embedder.regularVoiceErrorEmbed()).setEphemeral(true).queue();
-		}
+		if(!event.getMember().getVoiceState().inAudioChannel()) event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 		else
 		{
 			AudioChannelUnion vc = event.getMember().getVoiceState().getChannel();

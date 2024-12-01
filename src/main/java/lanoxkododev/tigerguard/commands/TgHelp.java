@@ -36,7 +36,7 @@ public class TgHelp implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{

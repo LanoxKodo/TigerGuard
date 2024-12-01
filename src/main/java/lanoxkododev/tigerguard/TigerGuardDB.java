@@ -1,7 +1,5 @@
 package lanoxkododev.tigerguard;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +13,8 @@ import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.javatuples.Quintet;
 import org.javatuples.Triplet;
+import org.mariadb.jdbc.Connection;
+import org.mariadb.jdbc.DatabaseMetaData;
 
 import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
@@ -32,6 +32,42 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
+/*
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.javatuples.Pair;
+import org.javatuples.Quartet;
+import org.javatuples.Quintet;
+import org.javatuples.Triplet;
+import org.mariadb.jdbc.Connection;
+import org.mariadb.jdbc.DatabaseMetaData;
+
+import dev.arbjerg.lavalink.protocol.v4.Exception;
+import kotlin.Deprecated;
+import kotlin.time.Duration;
+import lanoxkododev.tigerguard.logging.LogType;
+import lanoxkododev.tigerguard.logging.TigerLogs;
+import lanoxkododev.tigerguard.messages.MessageFactory;
+import lanoxkododev.tigerguard.polls.TigerPolls;
+import lanoxkododev.tigerguard.time.TimeDates;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+*/
+
 public class TigerGuardDB {
 
 	MessageFactory messageFactory = new MessageFactory();
@@ -40,10 +76,10 @@ public class TigerGuardDB {
 	public static TigerGuardDB tigerGuardDB;
 	public static int maxRankLevel = 40;
 	protected static int[] rankLevels = new int[maxRankLevel]; /**@see TigerGuardDB#setupRankChartList() for implementation details.*/
-	
+
 	static Connection connection;
 	final String db;
-	
+
 	/*
 	 * ########################
 	 * TODO: CONNECTION RELATED
@@ -56,13 +92,13 @@ public class TigerGuardDB {
 		initConnection(address, databaseName, databaseUser, databasePass);
 		setupRankChartList();
 	}
-	
+
 	protected void initConnection(String address, String databaseName, String databaseUser, String databasePass)
 	{
 		logger.log(LogType.INFO, "Attempting Database login with credentials from TigerGuardConfig.txt");
 		try
 		{
-			connection = DriverManager.getConnection(String.format("jdbc:mariadb://%s/", address) + databaseName, databaseUser, databasePass);
+			connection = (Connection) DriverManager.getConnection(String.format("jdbc:mariadb://%s/", address) + databaseName, databaseUser, databasePass);
 		}
 		catch (SQLException e)
 		{
@@ -89,16 +125,16 @@ public class TigerGuardDB {
 	{
 		return tigerGuardDB;// = new TigerGuardDB();
 	}
-	
+
 	/*
 	 * ########################
 	 * TODO: PERFORM STATEMENTS
 	 * ########################
 	 */
-	
+
 	/**
 	 * Method to handle all update events. Replaces {@link #prepare(String)}
-	 * 
+	 *
 	 * @param statement	- The statement to perform
 	 * @param type		- The LogType that the error might raise during a failure
 	 * @param error		- The error message that will be output along with the stacktrace for clarity
@@ -114,10 +150,10 @@ public class TigerGuardDB {
 			logger.logErr(type, error, statement, e);
 		}
 	}
-	
+
 	/**
 	 * Method to query data from the database. Replaces {{@link #prepare(String)}
-	 * 
+	 *
 	 * @param query	- The statement used for the query process.
 	 * @return		- The PreparedStatement result
 	 */
@@ -136,10 +172,10 @@ public class TigerGuardDB {
 
 		return queryResult;
 	}
-	
+
 	/**
 	 * Method to handle batch execution for the passed prepared statement
-	 * 
+	 *
 	 * @param ps - The PreparedStatement object
 	 */
 	private void performBatch(PreparedStatement ps)
@@ -153,7 +189,7 @@ public class TigerGuardDB {
 			logger.logErr(LogType.DATABASE_ERROR, "Error executing batch with the provided statement", ps.toString(), e);
 		}
 	}
-	
+
 	private PreparedStatement perform(String statement)
 	{
 		PreparedStatement ps = null;
@@ -169,13 +205,13 @@ public class TigerGuardDB {
 
 		return ps;
 	}
-	
+
 	/*
 	 * #######################
 	 * TODO: GETTERS & SETTERS
 	 * #######################
 	 */
-	
+
 	/**
 	 * Basic boolean returning method.
 	 *
@@ -190,7 +226,7 @@ public class TigerGuardDB {
 		boolean found = false;
 		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "') AS EXISTS_BY_NAME;";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			found = rs.next();
@@ -202,7 +238,7 @@ public class TigerGuardDB {
 
 		return found;
 	}
-	
+
 	/**
 	 * Basic boolean returning method.
 	 *
@@ -217,7 +253,7 @@ public class TigerGuardDB {
 		boolean found = false;
 		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "') AS EXISTS_BY_NAME;";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			found = rs.next();
@@ -243,10 +279,13 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "') AS EXISTS_BY_NAME;";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
-			if (rs.next()) return 1;
+			if (rs.next())
+			{
+				return 1;
+			}
 		}
 		catch (Exception e)
 		{
@@ -283,10 +322,10 @@ public class TigerGuardDB {
 
 		return null;
 	}
-	
+
 	/**
 	 * Get the channel the bot should message to for announcement-like events.
-	 * 
+	 *
 	 * @param guild	- The ID of the guild
 	 * @return
 	 */
@@ -295,16 +334,25 @@ public class TigerGuardDB {
 		//Long channel = this.basicSelectLong("guildInfo", "announcemenChannel", "id", guild);
 		Long channel = (Long) selectSingle("guildInfo", "announcemenChannel", "id", guild, "long");
 
-		if (channel != null) return channel;
+		if (channel != null)
+		{
+			return channel;
+		}
 		else
 		{
 			Long botChannel = getGuildBotSpamChannel(guild);
 
-			if (botChannel != null) return botChannel;
-			else return null;
+			if (botChannel != null)
+			{
+				return botChannel;
+			}
+			else
+			{
+				return null;
+			}
 		}
 	}
-	
+
 
 	/**
 	 * The Guild's premium status
@@ -315,7 +363,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT premium FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		boolean isPremium = false;
 		try
 		{
@@ -339,7 +387,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT adminRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -372,7 +420,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT primaryStaffRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -405,7 +453,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT secondaryStaffRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -438,7 +486,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT dynamicVcCategory FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -471,7 +519,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT dynamicVcChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -504,7 +552,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT musicChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -537,7 +585,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT memberRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
@@ -569,7 +617,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT nsfwRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -672,7 +720,7 @@ public class TigerGuardDB {
 		String statement = "SELECT name FROM " + db + guild + "embeds;";
 		ResultSet rs = performQuery(statement);
 		ArrayList<String> embeds = new ArrayList<>();
-		
+
 		try
 		{
 			while (rs.next())
@@ -687,7 +735,7 @@ public class TigerGuardDB {
 
 		return embeds;
 	}
-	
+
 	/**
 	 * Get the details for the specified embed. Returns the following: Title, Color, Data (Description), and the 'divider' role if applicable.
 	 *
@@ -699,7 +747,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT type, title, color, body FROM " + db + guild + "embeds WHERE name = '" + embedName + "';";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
@@ -714,12 +762,12 @@ public class TigerGuardDB {
 
 		return null;
 	}
-	
+
 	public String getColorEmbedBodyData(long guild)
 	{
 		String statement = "SELECT embed FROM " + db + guild + "embeds WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
@@ -731,15 +779,15 @@ public class TigerGuardDB {
 		{
 			logger.logErr(LogType.DATABASE_ERROR, "Failure getting color embed body data using", statement, e);
 		}
-		
+
 		return null;
 	}
-	
+
 	public String getEmbedBodyData(long guild, long embed)
 	{
 		String statement = "SELECT body FROM " + db + guild + "embeds WHERE id = " + embed + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
@@ -751,7 +799,7 @@ public class TigerGuardDB {
 		{
 			logger.logErr(LogType.DATABASE_ERROR, "Failure getting embed body data for guild " + guild + " from embed " + embed, statement, e);
 		}
-		
+
 		return null;
 	}
 
@@ -762,7 +810,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT botSpamChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -791,7 +839,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT levelChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -826,8 +874,11 @@ public class TigerGuardDB {
 			while (rs.next())
 			{
 				Object val = rs.getObject(1);
-				if (val == null) return null;
-				
+				if (val == null)
+				{
+					return null;
+				}
+
 				return rs.getLong(1);
 			}
 		}
@@ -854,7 +905,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT ruleChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -888,7 +939,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT knownLevelRoles FROM " + db + "levelRoles WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		int query = 0;
 		try
 		{
@@ -909,6 +960,7 @@ public class TigerGuardDB {
 	 * @deprecated - This was used for the legacy logic where each guild had their own lvlRoles table. Universal table now exists
 	 * @param statement
 	 */
+	@Deprecated
 	public void setGuildLevelUpRoleColumns(String statement)
 	{
 		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set level role value");
@@ -924,11 +976,12 @@ public class TigerGuardDB {
 	 * @param guild
 	 * @return
 	 */
+	@Deprecated
 	public int getGuildLevelUpRoles(long guild)
 	{
 		String statement = "SELECT knownLevelRoles FROM " + db + "levelRoles WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		int query = 0;
 		try
 		{
@@ -954,7 +1007,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT " + column + " FROM " + db + tableName + " WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -975,7 +1028,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT " + column + " FROM " + db + "lvlroles WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		Long query = null;
 		try
 		{
@@ -1012,7 +1065,7 @@ public class TigerGuardDB {
 		Long query = null;
 		String statement = "SELECT guildSizeChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
@@ -1027,7 +1080,7 @@ public class TigerGuardDB {
 
 		return query;
 	}
-	
+
 	/*
 	 * ##########################
 	 * TODO: CHECKERS AND HELPERS
@@ -1078,12 +1131,12 @@ public class TigerGuardDB {
 		String statement = "UPDATE " + db + table + " SET " + column + " = " + input + " WHERE " + where + " = '" + whereInput + "';";
 		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to complete singular statement with the provided statement");
 	}
-	
+
 	public int countRows(String table)
 	{
 		int count = 0;
 		String statement = "SELECT COUNT(*) FROM " + db + table + ";";
-		
+
 		try
 		{
 			//ResultSet query = performQuery("SELECT COUNT(*) FROM tigerguard_db." + table).executeQuery();
@@ -1111,7 +1164,7 @@ public class TigerGuardDB {
 	public boolean checkForTable(String table)
 	{
 		boolean found = false;
-		
+
 		try
 		{
 			DatabaseMetaData data = connection.getMetaData();
@@ -1133,14 +1186,14 @@ public class TigerGuardDB {
 
 	/**
 	 * Method to insert data into a row or column as specified by the passed statement for the first time
-	 * 
+	 *
 	 * @param statement - The statement handling the first-insertion
 	 */
 	public void firstInsertion(String statement)
 	{
 		performUpdate(statement, LogType.DATABASE_ERROR, "Failure with first-insertion using the provided statement");
 	}
-	
+
 	/**
 	 * Check database for any entries in the voiceTracker table.
 	 */
@@ -1178,7 +1231,7 @@ public class TigerGuardDB {
 	{
 		performUpdate("CREATE TABLE " + db + statement, LogType.DATABASE_ERROR, "Failure creating table from the provided statement");
 	}
-	
+
 	/**
 	 * Check if the guild is in the guildInfo database file.
 	 *
@@ -1264,7 +1317,7 @@ public class TigerGuardDB {
 
 		return found;
 	}
-	
+
 	/**
 	 * Search the database by table and column.
 	 *
@@ -1316,7 +1369,7 @@ public class TigerGuardDB {
 
 		return result;
 	}
-	
+
 	/**
 	 * @param table				- The table the data is within
 	 * @param column			- The column the data is within
@@ -1328,12 +1381,12 @@ public class TigerGuardDB {
 	public Object selectSingle(Object table, Object column, Object constraintColumn, Object constraintData, String objectType)
 	{
 		String statement = String.format("SELECT %s FROM " + db + "%s WHERE %s = %s", column.toString(), table.toString(), constraintColumn.toString(), constraintData.toString());
-		
+
 		try
 		{
 			ResultSet rs = performQuery(statement);
 			//ResultSet query = prepare(statement).executeQuery();
-			
+
 			while (rs.next())
 			{
 				switch (objectType.toLowerCase())
@@ -1355,13 +1408,13 @@ public class TigerGuardDB {
 		{
 			logger.logErr(LogType.DATABASE_ERROR, "Failure with select statement to return a value", statement, e);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Method for submitting embed data.
-	 * 
+	 *
 	 * @param guild - The guild the embed is for.
 	 * @param embedName - The internal name of the embed.
 	 * @param color - The color of the embed.
@@ -1371,10 +1424,10 @@ public class TigerGuardDB {
 	public void submitEmbed(long guild, String embedName, String type, String color, String title, String body)
 	{
 		String statement = String.format("INSERT INTO " + db + guild + "embeds (`name`, `type`, title, color, body) VALUES ('%s','%s','%s','%s','%s');", embedName, type, title, color, body);
-		
+
 		performUpdate(statement, LogType.DATABASE_ERROR, "Failure setting embed data for guild " + guild);
 	}
-	
+
 
 
 	public void basicDelete(String table, String column, Object input)
@@ -1387,7 +1440,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18 FROM " + db + "colorRoles WHERE id = " + guild;
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			int counted = 0;
@@ -1397,7 +1450,10 @@ public class TigerGuardDB {
 			{
 				do
 				{
-					if (rs.getLong(a) != 0) counted++;
+					if (rs.getLong(a) != 0)
+					{
+						counted++;
+					}
 					a++;
 				} while (a < 19);
 			}
@@ -1416,7 +1472,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18 FROM " + db + "colorRoles WHERE id = " + guild;
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			ArrayList<Long> array = new ArrayList<>();
@@ -1438,18 +1494,18 @@ public class TigerGuardDB {
 
 		return null;
 	}
-	
+
 	/*
 	 * ####################
 	 * TODO: TABLE HANDLERS
 	 * ####################
 	 */
-	
+
 	public void newGuildEntry(Long guild)
 	{
 		performUpdate("INSERT INTO " + db + "guildInfo (id) VALUES (" + guild + ");", LogType.DATABASE_ERROR, "Failure setting guild " + guild + " into DB.");
 	}
-	
+
 	public void createGuildColorRolesEntry(Long guild)
 	{
 		String statement = "INSERT INTO " + db + "colorRoles (id, embed, color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18)"
@@ -1457,7 +1513,7 @@ public class TigerGuardDB {
 
 		performUpdate(statement, LogType.DATABASE_ERROR, "Error inserting default color null entries for guild " + guild + "\n SQL Statement: " + statement);
 	}
-	
+
 	/*
 	 * ########################################
 	 * TODO: SERVER LEVELING AND XP TABLE LOGIC
@@ -1503,7 +1559,7 @@ public class TigerGuardDB {
 				    {
 				    	rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.05*a)))*(1.19+(0.03*a)))) + 4) / 5 * 5;
 				    }
-					
+
 					System.out.println(String.format("Level %1$s | %2$s | %3$s-%4$s | %4$s", a, (rankLevels[a]-rankLevels[a-1]), rankLevels[a-1], rankLevels[a]));
 				}
 				else //max rank
@@ -1523,7 +1579,7 @@ public class TigerGuardDB {
 	{
 		return maxRankLevel;
 	}
-	
+
 	/*
 	 * Per-server xp table
 	 */
@@ -1531,20 +1587,20 @@ public class TigerGuardDB {
 	{
 		String guildMeshXp = guild.getIdLong() + "xp";
 		String statement = "CREATE TABLE " + db + guildMeshXp + "(id varchar(45), level int(11), xp int(11), activeRole varchar(45);";
-		
+
 		try
 		{
 			performUpdate(statement, LogType.XP_DATABASE_ERROR, "Error creating guild xp table using");
 
 			guild.loadMembers().onSuccess(members -> {
 				List<Member> memberList = members.stream().filter(a -> !a.getUser().isBot()).toList();
-				
+
 				PreparedStatement ps = perform(statement);
-				
+
 				for (Member member : memberList)
 				{
 					String innerStatement = "INSERT INTO " + db + guildMeshXp + " (id, level, xp, activeRole) VALUES (" + member.getIdLong() + "0, 0, null);";
-					
+
 					try
 					{
 						ps.addBatch(innerStatement);
@@ -1554,7 +1610,7 @@ public class TigerGuardDB {
 						logger.logErr(LogType.DATABASE_ERROR, "Failure adding batch to statment", innerStatement, e);
 					}
 				}
-				
+
 				performBatch(ps);
 			});
 		}
@@ -1571,7 +1627,7 @@ public class TigerGuardDB {
 	{
 		performUpdate("INSERT INTO " + db + table + " (id, level, xp, activeRole) VALUES (" + user + ", 0, 0, null);", LogType.XP_DATABASE_ERROR, "Unable to insert user " + user + " into the table " + table);
 	}
-	
+
 	/*
 	 * Insert a Guild into the LevelRole table.
 	 */
@@ -1615,11 +1671,20 @@ public class TigerGuardDB {
 			logger.logErr(LogType.DATABASE_ERROR, "Unable to get the xp value and level for user " + member.getIdLong() + " in guild " + guild.getIdLong(), null, e);
 		}
 
-		if (TigerGuard.isDebugMode()) logger.log(LogType.DEBUG, "member's level and xp are: " + memberLevel + " | " + memberXP);
+		if (TigerGuard.isDebugMode())
+		{
+			logger.log(LogType.DEBUG, "member's level and xp are: " + memberLevel + " | " + memberXP);
+		}
 
 		Long levelRole = null;
-		if (memberLevel != 0) levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
-		else if (guild.getRoleById(getGuildMemberRole(guild.getIdLong())).getName() != null) levelRole = guild.getRoleById(getGuildMemberRole(guild.getIdLong())).getIdLong();
+		if (memberLevel != 0)
+		{
+			levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
+		}
+		else if (guild.getRoleById(getGuildMemberRole(guild.getIdLong())).getName() != null)
+		{
+			levelRole = guild.getRoleById(getGuildMemberRole(guild.getIdLong())).getIdLong();
+		}
 
 		//If memberlevel is less than max level
 		if (memberLevel < maxRankLevel)
@@ -1673,7 +1738,7 @@ public class TigerGuardDB {
 
 		return null;
 	}
-	
+
 	public void voiceStatusBegin(long member, long guild)
 	{
 		if (!checkRow("voiceTracker", "id", member))
@@ -1687,7 +1752,7 @@ public class TigerGuardDB {
 		String queryS = "SELECT init FROM " + db + "voiceTracker WHERE id = " + member + ";";
 		ResultSet rs = performQuery(queryS);
 		long query = 0;
-		
+
 		try
 		{
 			while (rs.next())
@@ -1709,7 +1774,7 @@ public class TigerGuardDB {
 		{
 			logger.logErr(LogType.DATABASE_ERROR, "Failure removing member " + member + " from voiceTrack table", statement, e);
 		}
-		
+
 		return query;
 	}
 
@@ -1734,8 +1799,8 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT bgimage FROM " + db + "globalUserData WHERE id = " + member + ";";
 		ResultSet rs = performQuery(statement);
-		Integer query = 0;
-		
+		int query = 0;
+
 		try
 		{
 			while (rs.next())
@@ -1762,7 +1827,10 @@ public class TigerGuardDB {
 	{
 		checkIfUserExistsInGlobalData(member.getIdLong());
 
-		if (dates.getBoostDateStatus()) xpGain = (int)Math.round(xpGain * dates.getBoostValue());
+		if (dates.getBoostDateStatus())
+		{
+			xpGain = (int)Math.round(xpGain * dates.getBoostValue());
+		}
 
 		String guildMesh = guild.getIdLong() + "xp";
 		int memberXP = 0;
@@ -1773,7 +1841,7 @@ public class TigerGuardDB {
 		{
 			String initialQuery = String.format("SELECT level, xp FROM %s%s WHERE id = %s", db, guildMesh, member.getIdLong());
 			ResultSet rs = performQuery(initialQuery);
-			
+
 			try
 			{
 				while (rs.next())
@@ -1792,7 +1860,7 @@ public class TigerGuardDB {
 			int increasedAmount = 0;
 			int checker = memberLevel;
 			boolean checkFinished = false;
-			
+
 			while (!checkFinished)
 			{
 				if ((memberXP + xpGain) > rankLevels[checker])
@@ -1807,10 +1875,16 @@ public class TigerGuardDB {
 					break;
 				}
 
-				if (TigerGuard.isDebugMode()) logger.log(LogType.DEBUG, "loop check: " + memberLevel + " | " + checker + " | " + increasedAmount);
+				if (TigerGuard.isDebugMode())
+				{
+					logger.log(LogType.DEBUG, "loop check: " + memberLevel + " | " + checker + " | " + increasedAmount);
+				}
 			}
 			Long levelRole = null;
-			if (memberLevel != 0) levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
+			if (memberLevel != 0)
+			{
+				levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
+			}
 
 			//If userLevel is not equal to max level, max level is given artifically once the user reaches the last index of rankLevels[] xp requirement.
 			if (memberLevel != maxRankLevel)
@@ -1860,7 +1934,7 @@ public class TigerGuardDB {
 					 */
 					//if (!hasValue(guild.getIdLong() + "xp", "activeRole", "id", member.getIdLong()))
 					//else ...
-					
+
 					//Current usage, test for edge cases
 					guild.addRoleToMember(member, guild.getRoleById(getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), maxRankLevel))).queue();
 				}
@@ -1895,8 +1969,14 @@ public class TigerGuardDB {
 						if (messageEvent != null)
 						{
 							Long levelChannel = getGuildLevelChannel(guild.getIdLong());
-							if (levelChannel != null) guild.getTextChannelById(levelChannel).sendMessage(msgBuilder.build()).queue();
-							else messageEvent.getChannel().sendMessage(msgBuilder.build()).queue();
+							if (levelChannel != null)
+							{
+								guild.getTextChannelById(levelChannel).sendMessage(msgBuilder.build()).queue();
+							}
+							else
+							{
+								messageEvent.getChannel().sendMessage(msgBuilder.build()).queue();
+							}
 						}
 						else
 						{
@@ -1930,10 +2010,10 @@ public class TigerGuardDB {
 			}
 		}
 	}
-	
+
 	/**
 	 * Conditional method for handling role provisioning depending on whether a user set a preferred role or not.
-	 * 
+	 *
 	 * @param guild - The guild the level up occurred in.
 	 * @param member - The member in question.
 	 * @param level - The level of the user after leveling up.
@@ -1943,32 +2023,32 @@ public class TigerGuardDB {
 		ArrayList<Long> roles = getGuildLevelRoleIDs(guild.getIdLong());
 		List<Role> memberRoles = member.getRoles();
 		System.out.println(memberRoles.size());
-		
+
 		int level = getGuildMemberLevel(guild.getIdLong(), member.getIdLong());
-		
+
 		//If user does NOT have a preferred role selected - ie never set one
 		if (hasValue(guild.getIdLong() + "xp", "activeRole", "id", member.getIdLong()))
 		{
 			logger.log(LogType.DEBUG, "Member " + member.getEffectiveName() + " is level " + level);
-			
+
 			for (int a = 0; a < (level-1); a++)
 			{
 				Role lvlRole = guild.getRoleById(roles.get(a));
 				logger.log(LogType.DEBUG, "Iterating through..." + a + " >> " + lvlRole.getName());
-				
+
 				if (memberRoles.contains(lvlRole))
 				{
 					guild.removeRoleFromMember(member, lvlRole).queue();
 				}
 			}
 		}
-		
+
 		//TODO - Possible edge-case identified, test in next iteration - relates to StringSelect file.
 	}
-	
+
 	/**
 	 * Used to get the level roles for a server
-	 * 
+	 *
 	 * @param guild
 	 * @return
 	 */
@@ -1976,7 +2056,7 @@ public class TigerGuardDB {
 	{
 		ArrayList<Long> results = new ArrayList<>();
 		String statement = "SELECT * FROM " + db + "lvlroles WHERE id = " + guild + ";";
-		
+
 		try
 		{
 			ResultSet rs = performQuery(statement);
@@ -1984,7 +2064,7 @@ public class TigerGuardDB {
 			while (rs.next())
 			{
 				long count = rs.getLong(2);
-				
+
 				for (int a = 1; a <= count; a++)
 				{
 					results.add(rs.getLong(rs.findColumn("role" + a)));
@@ -1995,13 +2075,13 @@ public class TigerGuardDB {
 		{
 			logger.logErr(LogType.DATABASE_ERROR, "Error getting levelRoles using statement", statement, e);
 		}
-		
+
 		return results;
 	}
-	
+
 	/**
 	 * Get the level for the member within the specified guild
-	 * 
+	 *
 	 * @param guild		- The ID of the guild
 	 * @param member	- The ID of the member
 	 * @return
@@ -2009,7 +2089,7 @@ public class TigerGuardDB {
 	public int getGuildMemberLevel(long guild, long member)
 	{
 		int result = 0;
-		
+
 		String statement = String.format("SELECT level FROM " + db + "%s WHERE id = %d", guild + "xp", member);
 		try
 		{
@@ -2024,23 +2104,23 @@ public class TigerGuardDB {
 		{
 			logger.logErr(LogType.DATABASE_ERROR, "Error getting member's level using", statement, e);
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * ######################
 	 * TODO: POLL TABLE LOGIC
 	 * ######################
 	 */
-	
+
 	//TODO - fix the reference to 'polltable' - current guildInfo table will not support this
 	public void createGuildPollTable(long guild)
 	{
 		performUpdate("CREATE TABLE " + db + guild + "polls (id VARCHAR(45), channeltype VARCHAR(45), channel VARCHAR(45), polltype VARCHAR(20), endtime VARCHAR(45), initiated VARCHAR(10));", LogType.DATABASE_ERROR, "Failure creating poll table for guild " + guild);
 		performUpdate("UPDATE " + db + "guildInfo SET pollTable = '" + guild + "polls' WHERE id = " + guild, LogType.DATABASE_ERROR, "Failuring updating poll table for guild " + guild + " after table creation");
 	}
-	
+
 	public void addGuildToTempPollTable(long guild)
 	{
 		performUpdate("INSERT INTO " + db + "tempPollData (id) VALUES (" + guild + ")", LogType.DATABASE_ERROR, "Failure inserting guild " + guild + " into tempPollData.");
@@ -2056,7 +2136,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT timetype, amount FROM " + db + "tempPollData WHERE id = " + guild + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
@@ -2077,19 +2157,22 @@ public class TigerGuardDB {
 	 */
 	public void pollCreation(long guild, long pollId, ChannelType channelType, long channel, String pollType)
 	{
-		if (!checkForTable(guild + "polls")) this.createGuildPollTable(guild);
-		
+		if (!checkForTable(guild + "polls"))
+		{
+			this.createGuildPollTable(guild);
+		}
+
 		Pair<String, Integer> data = getPollTempData(guild);
 		String timeType = data.getValue0();
 		String statementCreate = "CREATE TABLE " + db + "poll" + pollId + "(voter VARCHAR(45), vote VARCHAR(1));";
-		
+
 		if (timeType.equals("minute") && data.getValue1() <= 10) //If Poll might end and be missed between the poll-check loop
 		{
-			String statementB = "INSERT INTO " + db + guild + "polls (id, channeltype, channel, polltype, endtime, initiated) VALUES ('" + pollId + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + (System.currentTimeMillis() + (data.getValue1() * 60000)) + "', true);"; 
-			
+			String statementB = "INSERT INTO " + db + guild + "polls (id, channeltype, channel, polltype, endtime, initiated) VALUES ('" + pollId + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + (System.currentTimeMillis() + (data.getValue1() * 60000)) + "', true);";
+
 			performUpdate(statementCreate, LogType.DATABASE_ERROR, "Failure creating guild poll table");
 			performUpdate(statementB, LogType.DATABASE_ERROR, "Failure inserting into guild poll table");
-			
+
 			new TigerPolls().designatedQuickStart(guild, pollId, channelType, channel, pollType, (System.currentTimeMillis() + (data.getValue1() * 60000)));
 		}
 		else //All other polls (those that won't miss the next poll-check loop prior to expiring)
@@ -2109,9 +2192,9 @@ public class TigerGuardDB {
 					endTime = currentTime + Duration.ofDays(data.getValue1()).toMillis();
 					break;
 			}
-			
+
 			String statementB = "INSERT INTO " + db + guild + "polls` (id, channeltype, channel, polltype, endtime, initiated) VALUES ('" + pollId + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + endTime + "', false);";
-			
+
 			performUpdate(statementCreate, LogType.DATABASE_ERROR, "Failure creating guild poll table");
 			performUpdate(statementB, LogType.DATABASE_ERROR, "Failure inserting into guild poll table");
 		}
@@ -2127,7 +2210,7 @@ public class TigerGuardDB {
 	{
 		String statement = "SELECT 1 FROM " + db + "poll" + pollId + " WHERE voter = " + member + " LIMIT 1;";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			if (!rs.first())
@@ -2150,12 +2233,15 @@ public class TigerGuardDB {
 		ArrayList<Pair<Long, String>> polls = new ArrayList<>();
 		String statement = "SELECT id, pollTable FROM " + db + "guildInfo";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
 			{
-				if (rs.getString(2) != null) polls.add(Pair.with(rs.getLong(1), rs.getString(2)));
+				if (rs.getString(2) != null)
+				{
+					polls.add(Pair.with(rs.getLong(1), rs.getString(2)));
+				}
 			}
 		}
 		catch (Exception e)
@@ -2217,13 +2303,19 @@ public class TigerGuardDB {
 
 		String statement = "SELECT vote FROM " + db + "poll" + pollId + ";";
 		ResultSet rs = performQuery("SELECT vote FROM " + db + "poll" + pollId + ";");
-		
+
 		try
 		{
 			while (rs.next())
 			{
-				if (rs.getString(1).equals("y")) yay++;
-				else nay++;
+				if (rs.getString(1).equals("y"))
+				{
+					yay++;
+				}
+				else
+				{
+					nay++;
+				}
 			}
 
 			pollDeletion(guild, pollId);
@@ -2245,14 +2337,23 @@ public class TigerGuardDB {
 
 		String statement = "SELECT vote FROM " + db + "poll" + pollId + ";";
 		ResultSet rs = performQuery(statement);
-		
+
 		try
 		{
 			while (rs.next())
 			{
-				if (rs.getString(1).equals("y")) yay++;
-				else if (rs.getString(1).equals("a")) abs++;
-				else nay++;
+				if (rs.getString(1).equals("y"))
+				{
+					yay++;
+				}
+				else if (rs.getString(1).equals("a"))
+				{
+					abs++;
+				}
+				else
+				{
+					nay++;
+				}
 			}
 
 			pollDeletion(guild, pollId);
@@ -2270,7 +2371,7 @@ public class TigerGuardDB {
 	{
 		String statementDelete = String.format("DELETE FROM %s WHERE id = %s", db + guild + "polls", poll);
 		String statementDrop = String.format("DROP TABLE %s;", db + "poll" + poll);
-		
+
 		performUpdate(statementDelete, LogType.DATABASE_ERROR, "Failure deleting poll from database");
 		performUpdate(statementDrop, LogType.DATABASE_ERROR, "Failuring dropping table from database");
 	}

@@ -25,12 +25,12 @@ public class AudioComplex {
     {
         this.client = client;
         instance = this;
-        
+
         registerLavalinkNodes();
 		registerLavalinkListeners();
     }
 
-    public GuildMusicManager getOrCreateMusicManager(Guild guildId)
+    public GuildMusicManager acquireMusicManager(Guild guildId)
     {
         synchronized (this)
         {
@@ -43,22 +43,22 @@ public class AudioComplex {
             return mng;
         }
     }
-    
+
     public LavalinkClient getClient()
     {
     	return client;
     }
-    
+
     public Map<Long, GuildMusicManager> getMusicManagers()
     {
     	return musicManagers;
     }
-    
+
     public static AudioComplex getInstance()
     {
     	return instance;
     }
-    
+
     private void registerLavalinkNodes()
 	{
 		List.of(client.addNode(new NodeOptions.Builder("TigerGuardLavalink", URI.create("ws://localhost:2333"), "youshallnotpass", RegionGroup.US, 5000L)
@@ -67,7 +67,7 @@ public class AudioComplex {
 				node.on(TrackEndEvent.class).subscribe();
 		});
 	}
-	
+
 	private void registerLavalinkListeners()
 	{
         client.on(dev.arbjerg.lavalink.client.event.ReadyEvent.class).subscribe((event) -> {
@@ -78,7 +78,10 @@ public class AudioComplex {
 
         client.on(EmittedEvent.class).subscribe((event) -> {
             if (event instanceof TrackStartEvent) {}
-            else if (event instanceof TrackEndEvent) getOrCreateMusicManager(TigerGuard.getTigerGuard().getJDA().getGuildById(event.getGuildId())).scheduler.onTrackEnd();
+            else if (event instanceof TrackEndEvent)
+			{
+            	acquireMusicManager(TigerGuard.getTigerGuard().getJDA().getGuildById(event.getGuildId())).scheduler.onTrackEnd(true);
+			}
         });
     }
 }

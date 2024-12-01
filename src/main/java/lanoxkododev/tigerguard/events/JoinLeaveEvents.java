@@ -35,21 +35,30 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		if (tigerguardDB.getGuildBotSpamChannel(guild.getIdLong()) != null)
 		{
 			TextChannel channel = guild.getTextChannelById(tigerguardDB.getGuildBotSpamChannel(guild.getIdLong()));
-			
+
 			if (channel != null)
 			{
 				String intro = member.getEffectiveName() + " has joined!";
-				
-				if (member.getUser().isBot()) channel.sendMessageEmbeds(embedder.simpleEmbed(null, intro, member.getEffectiveAvatarUrl(), ColorCodes.JOIN,
-					"A bot of some kind. Be advised that I cannot vet bots for their safety features.")).queue();
-				else channel.sendMessageEmbeds(embedder.simpleEmbed(null, intro, member.getEffectiveAvatarUrl(), ColorCodes.JOIN, null)).queue();
+
+				if (member.getUser().isBot())
+				{
+					channel.sendMessageEmbeds(embedder.simpleEmbed(null, intro, member.getEffectiveAvatarUrl(), ColorCodes.JOIN,
+						"A bot of some kind. Be advised that I cannot vet bots for their safety features.")).queue();
+				}
+				else
+				{
+					channel.sendMessageEmbeds(embedder.simpleEmbed(null, intro, member.getEffectiveAvatarUrl(), ColorCodes.JOIN, null)).queue();
+				}
 			}
 		}
 
 		if (!member.getUser().isBot())
 		{
 			Long memberCheck = tigerguardDB.getGuildMemberRole(guild.getIdLong());
-			if (guild.getRoleById(memberCheck) != null || guild.getRoleById(memberCheck).getIdLong() != 0) guild.addRoleToMember(member, guild.getRoleById(memberCheck)).queue();
+			if (guild.getRoleById(memberCheck) != null || guild.getRoleById(memberCheck).getIdLong() != 0)
+			{
+				guild.addRoleToMember(member, guild.getRoleById(memberCheck)).queue();
+			}
 
 			if (!ArrayUtilities.guildMemberCounter.contains(guild))
 			{
@@ -60,7 +69,7 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		else
 		{
 			tigerguardDB.selectSingle("guildInfo", null, null, null, "long");
-			
+
 			long memberRole = tigerguardDB.getGuildMemberRole(guild.getIdLong());
 			if (memberRole != 0)
 			{
@@ -120,10 +129,16 @@ public class JoinLeaveEvents extends ListenerAdapter {
 	{
 		logger.log(LogType.INFO, "Server added bot! Sever " + event.getGuild().getId() + ", " + event.getGuild().getName());
 
-		if (!tigerguardDB.checkRow("guildInfo", "id", event.getGuild().getIdLong())) tigerguardDB.newGuildEntry(event.getGuild().getIdLong());
+		if (!tigerguardDB.checkRow("guildInfo", "id", event.getGuild().getIdLong()))
+		{
+			tigerguardDB.newGuildEntry(event.getGuild().getIdLong());
+		}
 
-		if (!tigerguardDB.checkForTable(event.getGuild().getIdLong() + "embeds")) tigerguardDB.createTable("CREATE TABLE tigerguard_db." + event.getGuild().getIdLong() +
-			"embeds (name varchar(25), type varchar(10), id varchar(45), title varchar(200), color varchar(7), datas varchar(1800), descr varchar(200));");
+		if (!tigerguardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
+		{
+			tigerguardDB.createTable("CREATE TABLE tigerguard_db." + event.getGuild().getIdLong() +
+				"embeds (name varchar(25), type varchar(10), id varchar(45), title varchar(200), color varchar(7), datas varchar(1800), descr varchar(200));");
+		}
 
 		new PermissionThreader(event.getGuild()).start();
 

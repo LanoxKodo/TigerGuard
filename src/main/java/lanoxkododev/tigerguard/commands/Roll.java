@@ -53,7 +53,7 @@ public class Roll implements TGCommand {
 
 		return options;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -86,7 +86,7 @@ public class Roll implements TGCommand {
 					return result;
 				}
 			}
-			
+
 			class DiceRollCollection {
 				private Map<Integer, List<DieRoll>> rollSets;
 
@@ -113,7 +113,7 @@ public class Roll implements TGCommand {
 					return rollSets;
 				}
 			}
-			
+
 			Integer d4 = null;
 			Integer d6 = null;
 			Integer d8 = null;
@@ -121,10 +121,10 @@ public class Roll implements TGCommand {
 			Integer d12 = null;
 			Integer d20 = null;
 			Integer d100 = null;
-			
+
 			ArrayList<Integer> validTypes = new ArrayList<>();
 			ArrayList<Integer> validCounts = new ArrayList<>();
-			
+
 			if (event.getOption("d4") != null)
 			{
 				d4 = event.getOption("d4").getAsInt();
@@ -167,7 +167,7 @@ public class Roll implements TGCommand {
 				validTypes.add(100);
 				validCounts.add(d100);
 			}
-			
+
 			if ((d4 == null) && (d6 == null) && (d8 == null) && (d10 == null) && (d12 == null) && (d20 == null) && (d100 == null))
 			{
 				event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Well, umm, what am I rolling?", null, null, ColorCodes.UNABLE,
@@ -185,19 +185,19 @@ public class Roll implements TGCommand {
 
 				DiceRollCollection drc = new DiceRollCollection();
 				drc.rollDice(diceTypes, diceCount);
-				
+
 				Map<Integer, List<DieRoll>> rollsByDie = drc.getRollSets();
 
 				List<Map.Entry<Integer, List<DieRoll>>> sortedList = new ArrayList<>(rollsByDie.entrySet());
 				Collections.sort(sortedList, Comparator.comparingInt(Map.Entry::getKey));
-				
+
 				String finalMessage = "";
 				int absoluteTotal = 0;
 		        for (Map.Entry<Integer, List<DieRoll>> entry : sortedList)
 		        {
 		        	int dieSides = entry.getKey();
 		            List<DieRoll> rolls = entry.getValue();
-		            
+
 		            String statement = "**" + rolls.size() + "D" + dieSides + ":** ";
 		            String calc = "";
 		            String temp = "";
@@ -208,9 +208,12 @@ public class Roll implements TGCommand {
 		            	int rolledValue = roll.getRollResult();
 		            	temp += rolledValue;
 		            	calcTotal += rolledValue;
-		            	
-		            	if (counter != rolls.size()-1) temp += ", ";
-		            	else
+
+		            	if (counter != rolls.size()-1)
+						{
+							temp += ", ";
+						}
+						else
 		            	{
 		            		calc = "***" + calcTotal + "***";
 		            	}
@@ -222,8 +225,14 @@ public class Roll implements TGCommand {
 		        }
 		        finalMessage += "\n**Total:** ***" + absoluteTotal + "***";
 
-				if (event.getOption("private").getAsBoolean()) event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Roll results:", null, null, ColorCodes.FINISHED, finalMessage)).setEphemeral(true).queue();
-				else event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Roll results:", null, null, ColorCodes.FINISHED, finalMessage)).queue();
+				if (event.getOption("private").getAsBoolean())
+				{
+					event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Roll results:", null, null, ColorCodes.FINISHED, finalMessage)).setEphemeral(true).queue();
+				}
+				else
+				{
+					event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Roll results:", null, null, ColorCodes.FINISHED, finalMessage)).queue();
+				}
 			}
 		}, null, null, false, false);
 	}

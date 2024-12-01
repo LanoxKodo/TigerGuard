@@ -5,10 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import dev.arbjerg.lavalink.client.Link;
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.Utils;
 import lanoxkododev.tigerguard.audio.AudioComplex;
@@ -31,11 +29,11 @@ public class Play implements TGCommand {
 	TigerLogs logger = new TigerLogs();
 	private final AudioComplex ac;
 
-	public Play(AudioComplex ac)
+	public Play(AudioComplex acIn)
 	{
-		this.ac = ac;
+		ac = acIn;
 	}
-	
+
 	@Override
 	public String getName()
 	{
@@ -62,7 +60,7 @@ public class Play implements TGCommand {
 
 		return options;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -76,16 +74,16 @@ public class Play implements TGCommand {
 		{
 			event.deferReply().setEphemeral(true).queue();
 			Guild guild = event.getGuild();
-			
+
 			if (!guild.getSelfMember().getVoiceState().inAudioChannel())
 			{
 				final AudioChannel voiceChannel = event.getMember().getVoiceState().getChannel();
-				
+
 				try
 				{
 					guild.getJDA().getDirectAudioController().connect(voiceChannel);
 					String request = event.getOption("query").getAsString();
-					
+
 					if (!(new Utils().isUrl(request))) request = "ytsearch: " + request;
 					else
 					{
@@ -96,10 +94,8 @@ public class Play implements TGCommand {
 							request = "ytsearch: " + title;
 						}
 					}
-					
-					final Link link = ac.getClient().getOrCreateLink(guild.getIdLong());
-					final var manager = ac.getOrCreateMusicManager(guild);
-					link.loadItem(request).subscribe(new AudioLoader(event, manager));
+
+					ac.getClient().getOrCreateLink(guild.getIdLong()).loadItem(request).subscribe(new AudioLoader(event, ac.acquireMusicManager(guild)));
 				}
 				catch (InsufficientPermissionException e)
 				{
@@ -110,24 +106,22 @@ public class Play implements TGCommand {
 				}
 			}
 		}
-		else
-		{
-			event.replyEmbeds(embedder.regularVoiceErrorEmbed()).setEphemeral(true).queue();
-		}
+		else event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 	}
-	
+
 	private String getVideoTitle(String url)
 	{
-		Document doc = null;
+		Element title = null;
+		
 		try
 		{
-			doc = Jsoup.connect(url).get();
+			title = Jsoup.connect(url).get().selectFirst("meta[name=title]");
 		}
 		catch (IOException e)
 		{
-			logger.logErr(LogType.ERROR, "Failure connecting with Jsoup.", "Requested URL: " + url, e);
+			logger.logErr(LogType.ERROR, "Failure grabbing video data", "Requested URL: " + url, e);
 		}
-		Element title = doc.selectFirst("meta[name=title]");
+
 		return title != null ? title.attr("content") : null;
 	}
 }

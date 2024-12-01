@@ -88,8 +88,14 @@ public class EmbedCreationThreader extends Thread {
 					{
 						for (int a = 0; a < dataParts.length; a++)
 						{
-							if (a % 2 == 0) roles.add(dataParts[a]);
-							else emojis.add(dataParts[a]);
+							if (a % 2 == 0)
+							{
+								roles.add(dataParts[a]);
+							}
+							else
+							{
+								emojis.add(dataParts[a]);
+							}
 						}
 
 						continuePermitted = verifyList(roles, emojis, true);
@@ -98,8 +104,14 @@ public class EmbedCreationThreader extends Thread {
 					{
 						for (int a = 0; a < dataParts.length; a++)
 						{
-							if (a % 2 == 0) emojis.add(dataParts[a]);
-							else roles.add(dataParts[a]);
+							if (a % 2 == 0)
+							{
+								emojis.add(dataParts[a]);
+							}
+							else
+							{
+								roles.add(dataParts[a]);
+							}
 						}
 
 						continuePermitted = verifyList(emojis, roles, false);
@@ -111,7 +123,7 @@ public class EmbedCreationThreader extends Thread {
 						{
 							str += "\n" + emojis.get(a) + " ➤ " + roles.get(a);
 						}
-						
+
 						String color = event.getOption("color").getAsString();
 						if (event.getOption("color").getAsString() != null)
 						{
@@ -122,8 +134,14 @@ public class EmbedCreationThreader extends Thread {
 							}
 							else
 							{
-								if (colorTemp.charAt(0) != '#') color = "#" + colorTemp;
-								else color = colorTemp;
+								if (colorTemp.charAt(0) != '#')
+								{
+									color = "#" + colorTemp;
+								}
+								else
+								{
+									color = colorTemp;
+								}
 							}
 						}
 
@@ -135,7 +153,10 @@ public class EmbedCreationThreader extends Thread {
 							String conjoin = event.getOption("description").getAsString() + "\n" + str;
 							embed.setDescription(conjoin.replace("\\n", "\n"));
 						}
-						else embed.setDescription(str);
+						else
+						{
+							embed.setDescription(str);
+						}
 
 						Long divider = null;
 						if (event.getOption("divider") != null)
@@ -154,7 +175,10 @@ public class EmbedCreationThreader extends Thread {
 							int a = 1;
 							while (!checkNameFinished)
 							{
-								if (tigerGuardDB.checkRow(guild.getIdLong() + "embeds", "name", name + a)) a++;
+								if (tigerGuardDB.checkRow(guild.getIdLong() + "embeds", "name", name + a))
+								{
+									a++;
+								}
 								else
 								{
 									checkNameFinished = true;
@@ -195,7 +219,10 @@ public class EmbedCreationThreader extends Thread {
 			{
 				set1.get(a);
 				set2.get(a);
-				if (!set1.get(a).contains("<@&") || set2.get(a).contains("<@&")) return false;
+				if (!set1.get(a).contains("<@&") || set2.get(a).contains("<@&"))
+				{
+					return false;
+				}
 			}
 		}
 		else //emojis array is first set, check to ensure all items in this array do not begin with the role number and that all items in the other do.
@@ -204,7 +231,10 @@ public class EmbedCreationThreader extends Thread {
 			{
 				set1.get(a);
 				set2.get(a);
-				if (set1.get(a).contains("<@&") || !set2.get(a).contains("<@&")) return false;
+				if (set1.get(a).contains("<@&") || !set2.get(a).contains("<@&"))
+				{
+					return false;
+				}
 			}
 		}
 

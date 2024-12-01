@@ -15,9 +15,9 @@ public class Pause implements TGCommand {
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	private final AudioComplex ac;
 
-	public Pause(AudioComplex ac)
+	public Pause(AudioComplex acIn)
 	{
-		this.ac = ac;
+		ac = acIn;
 	}
 
 	@Override
@@ -53,15 +53,12 @@ public class Pause implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if (!event.getMember().getVoiceState().inAudioChannel())
-		{
-			event.replyEmbeds(embedder.regularVoiceErrorEmbed()).setEphemeral(true).queue();
-		}
+		if (!event.getMember().getVoiceState().inAudioChannel()) event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 		else
 		{
 			event.deferReply().queue();
-			ac.getOrCreateMusicManager(event.getGuild()).setPauseStatus(true);
-			
+			ac.acquireMusicManager(event.getGuild()).setPauseStatus(true);
+
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Audio playback has been paused!", null, null, ColorCodes.FINISHED,
 				"To resume playback, run **/resume**!\nThis message will auto-delete in 30 seconds.")).queue(msg -> msg.delete().queueAfter(30, TimeUnit.SECONDS));
 		}

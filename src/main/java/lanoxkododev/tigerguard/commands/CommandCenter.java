@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.Command;
 
 /*
  * This file is pending an overhaul, pending changes to come in the future for dynamic handling of commands when I find
- * a way that best fits my preferred use-case. 
+ * a way that best fits my preferred use-case.
  */
 
 class CommandComparator implements Comparator<Command>
@@ -33,14 +33,14 @@ public class CommandCenter extends ListenerAdapter {
 
 	TigerLogs logger = new TigerLogs();
 	private List<TGCommand> tigerCommands = new ArrayList<>();
-	
+
 	private final AudioComplex ac;
-	
+
 	public CommandCenter(AudioComplex ac)
 	{
 		this.ac = ac;
 	}
-	
+
 	@Override
 	public void onReady(@NotNull ReadyEvent event)
 	{
@@ -64,9 +64,9 @@ public class CommandCenter extends ListenerAdapter {
 		tigerCommands.add(new VcName());
 		tigerCommands.add(new VcNSFW());
 		tigerCommands.add(new VcSFW());
-		
+
 		boolean doUpdate = false;
-		if (doUpdate == true)
+		if (doUpdate)
 		{
 			logger.log(LogType.INFO, "Updating commands...");
 			for (TGCommand command : tigerCommands)
@@ -79,7 +79,7 @@ public class CommandCenter extends ListenerAdapter {
 				}
 			}
 		}
-		
+
 		List<Command> jdaCommands = event.getJDA().retrieveCommands().complete();
 		Collections.sort(jdaCommands, new CommandComparator());
 		logger.log(LogType.INFO, "Available Commands:");

@@ -2,6 +2,7 @@ package lanoxkododev.tigerguard.events;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import lanoxkododev.tigerguard.ThreadUtilities;
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
@@ -109,12 +110,12 @@ public class ReactionEvents extends ListenerAdapter {
 		handleColorChange(roleVal, member, guild, colorRoles);
 		removeReaction(event);
 	}
-	
+
 	private void handleColorChange(Long roleProvisioned, Member member, Guild guild, ArrayList<Long> colorRoles)
 	{
 		ThreadUtilities.createGenericThread(a -> {
 			List<Role> memberRoles = member.getRoles();
-			
+
 			for (Long role : colorRoles)
 			{
 				if (memberRoles.contains(guild.getRoleById(role)))
@@ -123,7 +124,10 @@ public class ReactionEvents extends ListenerAdapter {
 				}
 			}
 			//If role selected was not the sponge, then provision the selected role.
-			if (roleProvisioned != -1L) guild.addRoleToMember(member, guild.getRoleById(roleProvisioned)).queue();
+			if (roleProvisioned != -1L)
+			{
+				guild.addRoleToMember(member, guild.getRoleById(roleProvisioned)).queue();
+			}
 		}, null, null, false, false);
 	}
 
@@ -151,7 +155,10 @@ public class ReactionEvents extends ListenerAdapter {
 				}
 			}
 
-			if (roleProvisioned != -1L) guild.addRoleToMember(member, guild.getRoleById(roleProvisioned)).queue();
+			if (roleProvisioned != -1L)
+			{
+				guild.addRoleToMember(member, guild.getRoleById(roleProvisioned)).queue();
+			}
 		}, null, null, false, false);
 	}
 

@@ -25,17 +25,17 @@ public class Pages {
 		"/assets/backgrounds/fantasyNatureTown02.png",
 		"/assets/backgrounds/koiPond.png"
 		};
-	
+
 	public Pages()
 	{
 		pages = this;
 	}
-	
+
 	public static Pages getInstance()
 	{
 		return pages;
 	}
-	
+
 	public int imageListSize()
 	{
 		return imageList.length - 1;
@@ -63,7 +63,7 @@ public class Pages {
 			"A pond featuring many Koi fish"};
 
 		String image = "";
-		
+
 		try
 		{
 			image = getImageAsStream(num).toString();
@@ -75,16 +75,16 @@ public class Pages {
 
 		return Quintet.with("Rank Card Customization", ColorCodes.TIGER_FUR, image, desc[num], "Page " + num.toString());
 	}
-	
+
 	public BufferedImage getBufferedImage(Integer num) throws IOException
 	{
 		return ImageIO.read(getClass().getResource(imageList[num]));
 	}
-	
+
 	public InputStream getImageAsStream(Integer num)
 	{
 		InputStream inputImage = null;
-		
+
 		try
 		{
 			inputImage = getClass().getResourceAsStream(imageList[num]);
@@ -93,7 +93,7 @@ public class Pages {
 		{
 			logger.logErr(LogType.ERROR, "Failure in processing image for '" + imageList[num] + "'", "InputStream = " + inputImage, e);
 		}
-		
+
 		return inputImage;
 	}
 }

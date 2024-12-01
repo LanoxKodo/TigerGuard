@@ -25,7 +25,7 @@ public class GuildMusicManager {
     {
         scheduler.deleteMusicEmbed();
         scheduler.queue.clear();
-        
+
         getPlayer().ifPresent(
         	(player) -> player.setPaused(false)
         		.setTrack(null)
@@ -33,22 +33,22 @@ public class GuildMusicManager {
         );
         guild.getJDA().getDirectAudioController().disconnect(guild);
     }
-    
+
     public void skip()
     {
     	scheduler.startNextTrack();
     }
-    
+
     /**
      * Change whether the player is paused (true) or playing (false)
-     * 
+     *
      * @param status
      */
     public void setPauseStatus(boolean status)
     {
     	getLink().ifPresent(player -> player.createOrUpdatePlayer().setPaused(status).subscribe());
     }
-    
+
     public Guild getGuild()
     {
     	return guild;

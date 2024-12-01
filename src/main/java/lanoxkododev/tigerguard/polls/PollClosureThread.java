@@ -54,10 +54,7 @@ public class PollClosureThread extends Thread {
 		{
 			long sleepTime = endTime - System.currentTimeMillis();
 
-			if (sleepTime > 0)
-			{
-				Thread.sleep(sleepTime);
-			}
+			if (sleepTime > 0) Thread.sleep(sleepTime);
 		}
 		catch (InterruptedException e)
 		{
@@ -85,9 +82,9 @@ public class PollClosureThread extends Thread {
 		int nay = results.getValue1();
 		int totalVotes = yay + nay;
 		int winThreshold = 0;
-		
+
 		String body = "";
-		
+
 		if (totalVotes == 0)
 		{
 			body += "***Well, umm...*** **|** Astonishingly the vote was so fantastic that no one voted!\n"
@@ -99,13 +96,12 @@ public class PollClosureThread extends Thread {
 			body += "*Poll title: " + original + "*\n\nTotal votes received: **" + totalVotes + "**. The winning threshold is at **" + winThreshold + "**.\n\n***Results:***\n"
 				+ "**Yays:** ***" + yay + "***\n"
 				+ "**Nays:** ***" + nay + "***\n\n";
-			
+
 			if (yay >= winThreshold) body += "***PASSED*** **|** The poll has passed with a majority in-favor vote count.";
 			else if (nay >= winThreshold) body += "***FAILED*** **|** The poll has failed without a majority in-favor vote count.";
 			else body += "***Hmm...*** **|** It seems an issue in calculating results occurred, report this as a bug with the poll result values.";
 		}
-		
-		//jda.getGuildById(guildVal).getTextChannelById(channel).editMessageEmbedsById(poll, embedder.simpleEmbed("𝙋𝙤𝙡𝙡 𝙃𝙖𝙨 𝙁𝙞𝙣𝙞𝙨𝙝𝙚𝙙", null, null, ColorCodes.POLL, body)).setComponents(Collections.emptyList()).queue();
+
 		jda.getGuildById(guildVal).getTextChannelById(channel).editMessageEmbedsById(poll, embedder.pollDuoEmbed("𝙋𝙤𝙡𝙡 𝙃𝙖𝙨 𝙁𝙞𝙣𝙞𝙨𝙝𝙚𝙙", ColorCodes.POLL, body, yay, nay))
 			.setComponents(Collections.emptyList()).queue();
 	}
@@ -131,12 +127,12 @@ public class PollClosureThread extends Thread {
 			int modVal = yay + nay; //Abstains-ignored vote, exclude them from taking up winning threshold logic. See pollTrioB for abstain-inclusive poll logic.
 			if (totalVotes == 1) winThreshold = 1;
 			else winThreshold = (51 * modVal) / 100;
-			
+
 			body += "*Poll title: " + original + "*\n\nTotal votes received: **" + totalVotes + "**. The winning threshold is at **" + winThreshold + "**\n\n***Results:***\n"
 				+ "**Yays:** ***" + yay + "***\n"
 				+ "**Abstains:** ***" + abs + "***\n"
 				+ "**Nays:** ***" + nay + "***\n\n";
-			
+
 			if (yay >= winThreshold) body += "***PASSED*** **|** The poll has passed with a majority in-favor vote count.";
 			else if (!(yay >= winThreshold)) body += "***FAILED*** **|** The poll has failed without a majority in-favor vote count.";
 			else body += "***Hmm...*** **|** It seems an issue in calculating results occurred, report this as a bug with the poll result values.";
@@ -153,7 +149,7 @@ public class PollClosureThread extends Thread {
 		int nay = results.getValue2();
 		int totalVotes = yay + abs + nay;
 		int winThreshold = 0;
-		
+
 		String body = "";
 
 		if (totalVotes == 0)
@@ -165,7 +161,7 @@ public class PollClosureThread extends Thread {
 		{
 			if (totalVotes == 1) winThreshold = 1;
 			else winThreshold = (51 * totalVotes) / 100;
-			
+
 			if (yay >= winThreshold) body += "***PASSED*** **|** The poll has passed with a majority in-favor vote count.";
 			else if (abs + nay >= winThreshold) body += "***FAILED*** **|** The poll has failed without a majority in-favor vote count.";
 			else body += "***Hmm...*** **|** It seems an issue in calculating results occurred, report this as a bug with the poll result values.";

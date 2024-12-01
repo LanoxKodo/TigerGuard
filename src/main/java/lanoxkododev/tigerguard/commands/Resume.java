@@ -15,9 +15,9 @@ public class Resume implements TGCommand {
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	private final AudioComplex ac;
 
-	public Resume(AudioComplex ac)
+	public Resume(AudioComplex acIn)
 	{
-		this.ac = ac;
+		ac = acIn;
 	}
 	@Override
 	public String getName()
@@ -42,7 +42,7 @@ public class Resume implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -52,15 +52,12 @@ public class Resume implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if (!event.getMember().getVoiceState().inAudioChannel())
-		{
-			event.replyEmbeds(embedder.regularVoiceErrorEmbed()).setEphemeral(true).queue();
-		}
+		if (!event.getMember().getVoiceState().inAudioChannel()) event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 		else
 		{
 			event.deferReply().queue();
-			ac.getOrCreateMusicManager(event.getGuild()).setPauseStatus(false);
-			
+			ac.acquireMusicManager(event.getGuild()).setPauseStatus(false);
+
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Audio playback has resumed!", null, null, ColorCodes.FINISHED,
 				"This message will auto-delete in 30 seconds.")).queue(msg -> msg.delete().queueAfter(30, TimeUnit.SECONDS));
 		}

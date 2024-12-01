@@ -75,7 +75,7 @@ public class TimeDates {
 
 		//Modern Data format
 		//0 - DATE NAME  |  1 - Pair<Month Start, Day Start>  |  2  Pair<Month End, Day End>  | 3  DATE DESCRIPTION  |  4  XP VALUE AS DOUBLE
-		
+
 		//Dates listed in order:
 		//Jan
 		//Feb
@@ -103,7 +103,10 @@ public class TimeDates {
 
 	protected void checkDateStatus(int day, int month, int year)
 	{
-		if (boostDateTimeEnd == null) assignDateCheck(day, month, year);
+		if (boostDateTimeEnd == null)
+		{
+			assignDateCheck(day, month, year);
+		}
 		else
 		{
 			if (System.currentTimeMillis() >= boostDateTimeEnd)
@@ -162,7 +165,7 @@ public class TimeDates {
 						{
 							start = format.parse(String.format(dateFormat, a.getValue1().getValue0(), a.getValue1().getValue1(), year, 11, 59, 00));
 							end = format.parse(String.format(dateFormat, a.getValue2().getValue0(), a.getValue2().getValue1(), year, 11, 59, 00));
-						};
+						}
 						end = format.parse(String.format(dateFormat, a.getValue2().getValue0(), a.getValue2().getValue1(), year, 11, 59, 00));
 					}
 					catch (Exception e)

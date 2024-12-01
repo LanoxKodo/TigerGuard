@@ -16,11 +16,11 @@ public class Stop implements TGCommand {
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	private final AudioComplex ac;
 
-	public Stop(AudioComplex ac)
+	public Stop(AudioComplex acIn)
 	{
-		this.ac = ac;
+		ac = acIn;
 	}
-	
+
 	@Override
 	public String getName()
 	{
@@ -44,7 +44,7 @@ public class Stop implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -54,14 +54,11 @@ public class Stop implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if (!event.getMember().getVoiceState().inAudioChannel())
-		{
-			event.replyEmbeds(embedder.regularVoiceErrorEmbed()).setEphemeral(true).queue();
-		}
+		if (!event.getMember().getVoiceState().inAudioChannel()) event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 		else
 		{
 			event.deferReply().queue();
-			ac.getOrCreateMusicManager(event.getGuild()).stop();
+			ac.acquireMusicManager(event.getGuild()).stop();
 			ac.getClient().getOrCreateLink(event.getGuild().getIdLong()).destroy();
 			event.getGuild().getJDA().getDirectAudioController().disconnect(event.getGuild());
 

@@ -16,10 +16,10 @@ public class Utils {
 
 	TigerLogs logger = new TigerLogs();
 	private HashMap<String, String> configMap;
-	
+
 	/**
 	 * Check if the input String is a url or not
-	 * 
+	 *
 	 * @param item - The String to check
 	 * @return
 	 */
@@ -35,12 +35,12 @@ public class Utils {
 			return false;
 		}
 	}
-	
+
 	private File getConfigFile(String filename)
 	{
 		return new File(System.getProperty("user.dir") + File.separator + filename);
 	}
-	
+
 	/**
 	 * Important method, creates the config file in the event one does not exist. Admin's must enter the new credentials as needed.
 	 * @param filename - the config file the bot searches for
@@ -53,12 +53,21 @@ public class Utils {
 			FileWriter writer = new FileWriter(filename);
 			writer.write("#TigerGuard Config File");
 			writer.write("\n#Edit the below values so they fit your usecase");
-			writer.write("\naddress: ");
-			writer.write("\nport: ");
-			writer.write("\nbotToken: ");
-			writer.write("\ndatabaseName: ");
-			writer.write("\ndatabaseUsername: ");
-			writer.write("\ndatabasePassword: ");
+			
+			writer.write("\n\n#Connection Info");
+			writer.write("\naddress: localhost");
+			writer.write("\nport: 3306");
+			
+			writer.write("\n\n#Discord Bot API Token Info");
+			writer.write("\nbotToken: YOUR_DISCORD_BOT_API_KEY");
+			
+			writer.write("\n\n#MariaDB Database Connection Info");
+			writer.write("\ndatabaseName: YOUR_DATABASE_NAME");
+			writer.write("\ndatabaseUsername: YOUR_DATABASES_BOT_USER");
+			writer.write("\ndatabasePassword: YOUR_DATABASES_BOT_USER_PASSWORD");
+			
+			writer.write("\n\n#Audio Feature Info");
+			writer.write("\nyoutubeOAuthRefreshToken: YOUR_YT_OAUTH_REFRESH_TOKEN");
 			writer.close();
 			logger.log(LogType.INFO, "New TigerGuardConfig.txt file created. Please edit this file to permit the bot to sign in and work");
 		}
@@ -67,10 +76,10 @@ public class Utils {
 			logger.logErr(LogType.ERROR, "Failure writing config file", null, e);
 		}
 	}
-	
+
 	/**
 	 * Important method, verifies the config file and it's status and data.
-	 * 
+	 *
 	 * @param filename - the config file the bot references
 	 */
 	public boolean verifyConfig(String filename)
@@ -93,13 +102,13 @@ public class Utils {
 							{
 								String key = parts[0].trim();
 								String value = parts[1].trim();
-								
+
 								if (!value.isEmpty()) configMap.put(key, value);
 								else return false; //Do not permit the bot to continue if any value is not filled in.
 							}
 						}
 					}
-					
+
 					reader.close();
 					return true;
 				}
@@ -109,10 +118,10 @@ public class Utils {
 				logger.logErr(LogType.ERROR, "Failure finding config file", null, e);
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public String getValue(String key)
 	{
 		return configMap.get(key);

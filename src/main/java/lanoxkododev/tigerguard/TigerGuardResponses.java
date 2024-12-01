@@ -20,7 +20,7 @@ public class TigerGuardResponses {
 
 		return responses[a];
 	}
-	
+
 	public String banter(String memberTag)
 	{
 		String[] banterText = {

@@ -214,7 +214,10 @@ public class SelectEvents extends ListenerAdapter {
 						ArrayList<String> embedsDel = tigerGuardDB.getEmbedNames(event.getGuild().getIdLong());
 						Builder selectDeleter = StringSelectMenu.create("s5-em-req-delete");
 
-						for (String str : embedsDel) selectDeleter.addOption(str, str);
+						for (String str : embedsDel)
+						{
+							selectDeleter.addOption(str, str);
+						}
 
 						if (selectDeleter.getOptions().size() == 0 || selectDeleter.getOptions() == null)
 						{
@@ -269,7 +272,10 @@ public class SelectEvents extends ListenerAdapter {
 						ArrayList<String> embedsDel = tigerGuardDB.getEmbedNames(event.getGuild().getIdLong());
 						Builder selectDeleter = StringSelectMenu.create("s5-em-req-delete");
 
-						for (String str : embedsDel) selectDeleter.addOption(str, str);
+						for (String str : embedsDel)
+						{
+							selectDeleter.addOption(str, str);
+						}
 
 						if (selectDeleter.getOptions().size() == 0 || selectDeleter.getOptions() == null)
 						{
@@ -386,7 +392,10 @@ public class SelectEvents extends ListenerAdapter {
 
 						if (250-rolesCount > 0)
 						{
-							if (max-current > 0) event.replyModal(new ModalEvents().levelRoleCreationModal(event.getMember(), event.getGuild(), event, max, current)).queue();
+							if (max-current > 0)
+							{
+								event.replyModal(new ModalEvents().levelRoleCreationModal(event.getMember(), event.getGuild(), event, max, current)).queue();
+							}
 							else
 							{
 								event.replyEmbeds(embedder.simpleEmbed("Max number of level roles reached", null, null, ColorCodes.FLARE, "Currently I only support a max number of " + max + " level-up roles.\n" +

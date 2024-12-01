@@ -65,7 +65,7 @@ public class PromptRolesThreader extends Thread {
 	{
 		String output = baseText;
 		if (TigerGuard.isDebugMode()) { System.out.println("Output equals: " + output);}
-		
+
 		for (String check : roles.keySet())
 		{
 			if (TigerGuard.isDebugMode())
@@ -305,15 +305,21 @@ public class PromptRolesThreader extends Thread {
 		msg.addReaction(Emoji.fromFormatted("🎉")).queue();
 		embed.clear();
 
-		if (tigerguardDB.checkRow("color_roles", "guild_id", guild.getIdLong())) createColorSelector(event);
-		else createMessageCanWeGetMore(event);
+		if (tigerguardDB.checkRow("color_roles", "guild_id", guild.getIdLong()))
+		{
+			createColorSelector(event);
+		}
+		else
+		{
+			createMessageCanWeGetMore(event);
+		}
 	}
 
 	private void createColorSelector(StringSelectInteractionEvent event)
 	{
 		String output = "";
 		InputStream rainbow = getClass().getResourceAsStream("/res/misc/rainbow.png");
-		
+
 		LinkedHashMap<String, String> roleInfo = new LinkedHashMap<>();
 		roleInfo.put("🍎", "Red");
 		roleInfo.put("🥭", "Red Orange");

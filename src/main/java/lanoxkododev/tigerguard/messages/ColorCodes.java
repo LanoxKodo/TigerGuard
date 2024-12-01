@@ -24,7 +24,7 @@ public enum ColorCodes {
     {
         this.value = i;
     }
-    
+
     /*
      * Return hex-value of color.
      */

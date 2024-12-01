@@ -23,7 +23,7 @@ public class TigerLogs {
 			logStatement += "\n┗@: " + Thread.currentThread().getStackTrace()[2].getClassName() + "." +
 				Thread.currentThread().getStackTrace()[2].getMethodName() + "()";
 		}
-		
+
 		System.out.println(String.format("[%s %s] %s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")), logVariant, logStatement));
 	}
 
@@ -45,9 +45,16 @@ public class TigerLogs {
 		String lineA = String.format("[%s %s] %s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")), logVariant, initialError);
 		String end = "\n┗";
 		String lineB = Thread.currentThread().getStackTrace()[2].getClassName() + "." + Thread.currentThread().getStackTrace()[2].getMethodName() + "()";
-		
-		if (optStatement == null || optStatement.isEmpty()) System.out.println(lineA + end + "@: " + lineB);
-		else System.out.println(lineA + "\n┣@: " + lineB + end + "X: " + optStatement);
-		e.printStackTrace();
+
+		if (optStatement == null || optStatement.isEmpty())
+		{
+			System.out.println(lineA + end + "@: " + lineB);
+			e.printStackTrace();
+		}
+		else
+		{
+			System.out.println(lineA + "\n┣@: " + lineB + end + "X: " + optStatement);
+			e.printStackTrace();
+		}
 	}
 }

@@ -16,34 +16,29 @@ import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class AudioLoader extends AbstractAudioLoadResultHandler {
-	
+
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 
 	private final SlashCommandInteractionEvent event;
     private final GuildMusicManager manager;
 
-    public AudioLoader(SlashCommandInteractionEvent event, GuildMusicManager mngr)
+    public AudioLoader(SlashCommandInteractionEvent eventIn, GuildMusicManager managerIn)
     {
-        this.event = event;
-        manager = mngr;
+        event = eventIn;
+        manager = managerIn;
     }
 
     @Override
-    public void ontrackLoaded(@NotNull TrackLoaded result) {
-        final Track track = result.getTrack();
-        TrackInfo info = track.getInfo();
-        
-        manager.scheduler.enqueue(track);
-        requestAcceptedEmbed(info);
+    public void ontrackLoaded(@NotNull TrackLoaded result)
+    {
+        processRequest(result.getTrack());
     }
 
     @Override
-    public void onPlaylistLoaded(@NotNull PlaylistLoaded result)
+    public void onPlaylistLoaded(@NotNull PlaylistLoaded playlist)
     {
-        TrackInfo info = result.getTracks().get(0).getInfo();
-
-        manager.scheduler.enqueuePlaylist(result.getTracks());
-        requestAcceptedEmbed(info);
+        manager.scheduler.enqueuePlaylist(playlist.getTracks());
+        requestAcceptedEmbed(playlist.getTracks().get(0).getInfo());
     }
 
     @Override
@@ -51,17 +46,13 @@ public class AudioLoader extends AbstractAudioLoadResultHandler {
     {
         final List<Track> tracks = result.getTracks();
 
-        if (tracks.isEmpty())
+        if (tracks.isEmpty()) event.getHook().sendMessage("No tracks found!").queue();
+        else
         {
-            event.getHook().sendMessage("No tracks found!").queue();
-            return;
+        	Track track = tracks.get(0);
+            requestAcceptedEmbed(track.getInfo());
+        	processRequest(track);
         }
-
-        final Track firstTrack = tracks.get(0);
-        TrackInfo info = firstTrack.getInfo();
-
-        manager.scheduler.enqueue(firstTrack);
-        requestAcceptedEmbed(info);
     }
 
     @Override
@@ -71,25 +62,23 @@ public class AudioLoader extends AbstractAudioLoadResultHandler {
             "I was unable to retrieve a result for your request; please try again or submit a bug report in my support server!");
     }
 
-    @Override
+	@Override
     public void loadFailed(@NotNull LoadFailed result)
     {
     	requestFailureEmbed("Failed to load track!", ColorCodes.ERROR, result.getException().getMessage());
     }
-    
+
     /**
      * Reply to our event with a success embed.
-     * 
-     * @param info
      */
     private void requestAcceptedEmbed(TrackInfo info)
     {
     	event.getHook().sendMessageEmbeds(embedder.tigerEmbed("Request accepted", ColorCodes.CONFIRMATION, "Requested: " + info.getTitle())).queue();
     }
-    
+
     /**
      * Reply to our event with a failure embed.
-     * 
+     *
      * @param title
      * @param color
      * @param body
@@ -97,5 +86,10 @@ public class AudioLoader extends AbstractAudioLoadResultHandler {
     private void requestFailureEmbed(String title, ColorCodes color, String body)
     {
     	event.getHook().sendMessageEmbeds(embedder.tigerEmbed(title, color, body)).queue();
+    }
+    
+    private void processRequest(Track track)
+    {
+    	manager.scheduler.enqueue(track);
     }
 }

@@ -52,7 +52,10 @@ public class LevelRoleRepairThreader extends Thread {
 		else
 		{
 			boolean voiceTableCheck = tigerguardDB.checkForTable("voiceTracker");
-			if (!voiceTableCheck) tigerguardDB.createTable("CREATE TABLE tigerguarddb." + "voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45);");
+			if (!voiceTableCheck)
+			{
+				tigerguardDB.createTable("CREATE TABLE tigerguarddb." + "voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45);");
+			}
 
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("I will now begin repairing level roles", null, null, ColorCodes.CONFIRMATION, "For roles that I find need repairing/restoring, they will be named in the format of \"Level_#_Role (Lvl #)\\\".\\nYou may edit these however you wish!\\n\\nPlease wait for me to send a confirmation message of the repair process being completed!" +
 				"This message will auto-delete in 1 minute.")).queue(msg -> msg.delete().queueAfter(60, TimeUnit.SECONDS));

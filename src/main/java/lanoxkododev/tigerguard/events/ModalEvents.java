@@ -87,7 +87,7 @@ public class ModalEvents extends ListenerAdapter {
 					.setComponents((ActionRow.of(pollButtons))).queue(msg -> {
 						tigerGuardDB.pollCreation(event.getGuild().getIdLong(), msg.getIdLong(), msg.getChannelType(), msg.getChannel().getIdLong(), "Duo");
 				});
-				
+
 				event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Poll request finalized", null, null, ColorCodes.FINISHED,
 					"If the poll was not created, please seek help on my support server")).queue();
 				break;
@@ -103,7 +103,7 @@ public class ModalEvents extends ListenerAdapter {
 	private void trioPollHandOff(ModalInteractionEvent event, char type)
 	{
 		List<Button> pollButtons = new ArrayList<>();
-		
+
 		pollButtons.add(Button.success("poll-vote-yay", "Yay").withEmoji(Emoji.fromFormatted("✅")));
 		pollButtons.add(Button.secondary("poll-vote-abstain", "Abstain").withEmoji(Emoji.fromFormatted("🏖")));
 		pollButtons.add(Button.danger("poll-vote-nay", "Nay").withEmoji(Emoji.fromFormatted("❎")));
@@ -123,7 +123,7 @@ public class ModalEvents extends ListenerAdapter {
 		.setComponents((ActionRow.of(pollButtons))).queue(msg -> {
 			tigerGuardDB.pollCreation(event.getGuild().getIdLong(), msg.getIdLong(), msg.getChannelType(), msg.getChannel().getIdLong(), "Trio" + type);
 		});
-		
+
 		event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Poll request finalized", null, null, ColorCodes.FINISHED,
 			"If the poll was not created, please seek help on my support server")).queue();
 	}
@@ -163,7 +163,7 @@ public class ModalEvents extends ListenerAdapter {
 			.setRequiredRange(1, max-current).build();
 
 		modal = Modal.create("levelUpRoleCreator", "Level-Up Role Creator").addComponents(ActionRow.of(levelUpCreationAmount)).build();
-		
+
 		return modal;
 	}
 }

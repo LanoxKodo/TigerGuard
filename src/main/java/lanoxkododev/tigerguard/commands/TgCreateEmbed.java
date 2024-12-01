@@ -45,7 +45,7 @@ public class TgCreateEmbed implements TGCommand {
 
 		return options;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -56,7 +56,7 @@ public class TgCreateEmbed implements TGCommand {
 	public void execute(SlashCommandInteractionEvent event)
 	{
 		event.deferReply().queue();
-		
+
 		if (!tigerGuardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
 		{
 			tigerGuardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
@@ -75,7 +75,7 @@ public class TgCreateEmbed implements TGCommand {
 		{
 			String body = event.getOption("body").getAsString();
 			String color = "";
-			
+
 			if (event.getOption("color") != null)
 			{
 				String colorTemp = event.getOption("color").getAsString();
@@ -85,17 +85,26 @@ public class TgCreateEmbed implements TGCommand {
 				}
 				else
 				{
-					if (colorTemp.charAt(0) != '#') color = "#" + colorTemp;
-					else color = colorTemp;
+					if (colorTemp.charAt(0) != '#')
+					{
+						color = "#" + colorTemp;
+					}
+					else
+					{
+						color = colorTemp;
+					}
 				}
 			}
 			//Do not assign ColorCode item in DB, just leave blank then do checks in embed-printing.
-			
+
 			String title = "";
-			if (event.getOption("title") != null) title = event.getOption("title").getAsString();
-			
+			if (event.getOption("title") != null)
+			{
+				title = event.getOption("title").getAsString();
+			}
+
 			tigerGuardDB.submitEmbed(event.getGuild().getIdLong(), event.getOption("embed_name").getAsString(), "regular", color, title, body);
-			
+
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Test - completed", null, null, ColorCodes.FINISHED, "Check the DB for QA")).queue();
 		}
 	}

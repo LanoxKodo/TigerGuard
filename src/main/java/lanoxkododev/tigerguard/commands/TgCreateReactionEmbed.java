@@ -45,7 +45,7 @@ public class TgCreateReactionEmbed implements TGCommand {
 
 		return options;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{

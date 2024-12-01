@@ -31,15 +31,15 @@ public class EmbedPrinterThreader extends Thread {
 	private void review()
 	{
 		Quartet<String, String, String, String> embedData = tigerGuardDB.getEmbedData(input, event.getGuild().getIdLong());
-		
+
 		System.out.println("EmbedPrinterThreadder Debug :: Type=" +
 				embedData.getValue0() + " | Title=" +
 				embedData.getValue1() + " | Color=" +
 				embedData.getValue2() + " | Body=" +
 				embedData.getValue3());
-		
+
 		String embedType = embedData.getValue0();
-		
+
 		if (embedType.equalsIgnoreCase("regular"))
 		{
 			regularEmbedWithTitle(embedData.getValue1(), embedData.getValue2(), embedData.getValue3());
@@ -49,12 +49,12 @@ public class EmbedPrinterThreader extends Thread {
 			roleEmbedSection(embedData);
 		}
 	}
-	
+
 	private void regularEmbedWithTitle(String title, String color, String body)
 	{
 		event.getChannel().sendMessageEmbeds(embedder.regularEmbed(title, color, body)).queue();
 	}
-	
+
 	private void roleEmbedSection(Quartet<String, String, String, String> embedData)
 	{
 		ArrayList<String> roles = new ArrayList<>();
@@ -65,21 +65,36 @@ public class EmbedPrinterThreader extends Thread {
 		{
 			for (int a = 0; a < dataParts.length; a++)
 			{
-				if (a % 2 == 0) roles.add(dataParts[a]);
-				else emojis.add(dataParts[a]);
+				if (a % 2 == 0)
+				{
+					roles.add(dataParts[a]);
+				}
+				else
+				{
+					emojis.add(dataParts[a]);
+				}
 			}
 		}
 		else //If first index is an emoji
 		{
 			for (int a = 0; a < dataParts.length; a++)
 			{
-				if (a % 2 == 0) emojis.add(dataParts[a]);
-				else roles.add(dataParts[a]);
+				if (a % 2 == 0)
+				{
+					emojis.add(dataParts[a]);
+				}
+				else
+				{
+					roles.add(dataParts[a]);
+				}
 			}
 		}
 
 		String color = embedData.getValue2();
-		if (color.charAt(0) != '#') color = "#" + color;
+		if (color.charAt(0) != '#')
+		{
+			color = "#" + color;
+		}
 
 		event.getChannel().sendMessageEmbeds(embedder.roleEmbed(Triplet.with(embedData.getValue1(), embedData.getValue2(), embedData.getValue3()), roles, emojis)).queue(a -> { //embedData.getValue3 was getValue4 here. Update as needed
 			for (String emojiItem : emojis)

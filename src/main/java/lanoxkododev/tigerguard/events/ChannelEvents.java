@@ -30,7 +30,10 @@ public class ChannelEvents extends ListenerAdapter {
 
 	private void deleteVC(AudioChannelUnion vc)
 	{
-		if (vc.getIdLong() == tigerGuardDB.getGuildCustomvcChannel(vc.getGuild().getIdLong())) logger.log(LogType.WARNING, "Bot tried to delete customVC channel for guild " + vc.getGuild().getIdLong() + ", denying deletion.");
+		if (vc.getIdLong() == tigerGuardDB.getGuildCustomvcChannel(vc.getGuild().getIdLong()))
+		{
+			logger.log(LogType.WARNING, "Bot tried to delete customVC channel for guild " + vc.getGuild().getIdLong() + ", denying deletion.");
+		}
 		else
 		{
 			vc.delete().queue();
@@ -53,17 +56,26 @@ public class ChannelEvents extends ListenerAdapter {
 				{
 					AudioChannelUnion vcJoined = event.getChannelJoined();
 
-					if (vcJoined.getIdLong() == guildCustomvcChannel) createNewVoiceChannelFromJoin(event);
+					if (vcJoined.getIdLong() == guildCustomvcChannel)
+					{
+						createNewVoiceChannelFromJoin(event);
+					}
 					else
 					{
-						if (tigerGuardDB.checkRow("levelRoles", "id", guild.getIdLong())) tigerGuardDB.voiceStatusBegin(event.getMember().getIdLong(), guild.getIdLong());
+						if (tigerGuardDB.checkRow("levelRoles", "id", guild.getIdLong()))
+						{
+							tigerGuardDB.voiceStatusBegin(event.getMember().getIdLong(), guild.getIdLong());
+						}
 					}
 				}
 				else
 				{
 					AudioChannelUnion vcLeft = event.getChannelLeft();
 
-					if (!guildCustomvcChannel.equals(vcLeft.getIdLong())) totalTimeInVC(event, event.getMember());
+					if (!guildCustomvcChannel.equals(vcLeft.getIdLong()))
+					{
+						totalTimeInVC(event, event.getMember());
+					}
 					else if (vcLeft.getIdLong() != guildCustomvcChannel && vcLeft.getMembers().size() == 1)
 					{
 						List<Member> memberRemaining = vcLeft.getMembers();
@@ -82,7 +94,10 @@ public class ChannelEvents extends ListenerAdapter {
 						}
 					}
 
-					if (vcLeft.getParentCategory().getIdLong() == guildCustomvcCategory && vcLeft.getIdLong() != guildCustomvcChannel) deleteVC(vcLeft);
+					if (vcLeft.getParentCategory().getIdLong() == guildCustomvcCategory && vcLeft.getIdLong() != guildCustomvcChannel)
+					{
+						deleteVC(vcLeft);
+					}
 				}
 			}
 		}
@@ -108,10 +123,19 @@ public class ChannelEvents extends ListenerAdapter {
 
 			if (calc >= 1)
 			{
-				if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "id", member.getIdLong())) tigerGuardDB.insertUserIntoGuildXPTable(event.getGuild().getIdLong() + "xp", member.getIdLong());
+				if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "id", member.getIdLong()))
+				{
+					tigerGuardDB.insertUserIntoGuildXPTable(event.getGuild().getIdLong() + "xp", member.getIdLong());
+				}
 
-				if (calc <= 56) tigerGuardDB.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * calc), null, event);
-				else tigerGuardDB.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * 56), null, event);
+				if (calc <= 56)
+				{
+					tigerGuardDB.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * calc), null, event);
+				}
+				else
+				{
+					tigerGuardDB.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * 56), null, event);
+				}
 			}
 		}
 	}
@@ -127,6 +151,9 @@ public class ChannelEvents extends ListenerAdapter {
 		guild.getCategoryById(tigerGuardDB.getGuildCustomvcCategory(guild.getIdLong())).createVoiceChannel(names[rand])
 			.addRolePermissionOverride(guild.getPublicRole().getIdLong(), Permission.VOICE_CONNECT.getRawValue(), 0L).queue(channel ->
 				guild.moveVoiceMember(member, guild.getVoiceChannelById(channel.getIdLong())).queue());
-				if (!member.getUser().isBot()) tigerGuardDB.voiceStatusBegin(member.getIdLong(), guild.getIdLong());
+				if (!member.getUser().isBot())
+				{
+					tigerGuardDB.voiceStatusBegin(member.getIdLong(), guild.getIdLong());
+				}
 	}
 }

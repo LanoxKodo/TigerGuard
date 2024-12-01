@@ -39,7 +39,10 @@ public class LevelRoleAdderThreader extends Thread {
 	{
 		boolean xpTableCheck = tigerguardDB.checkForTable(guild.getIdLong() + "xp");
 
-		if (!xpTableCheck) tigerguardDB.createGuildXpTable(event.getGuild());
+		if (!xpTableCheck)
+		{
+			tigerguardDB.createGuildXpTable(event.getGuild());
+		}
 
 		String statementBase = "UPDATE tigerguarddb.levelRoles SET ";
 		String statementAdd = "";

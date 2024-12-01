@@ -16,9 +16,9 @@ public class Skip implements TGCommand {
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	private final AudioComplex ac;
 
-	public Skip(AudioComplex ac)
+	public Skip(AudioComplex acIn)
 	{
-		this.ac = ac;
+		ac = acIn;
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class Skip implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -54,15 +54,12 @@ public class Skip implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if (!event.getMember().getVoiceState().inAudioChannel())
-		{
-			event.replyEmbeds(embedder.regularVoiceErrorEmbed()).setEphemeral(true).queue();
-		}
+		if (!event.getMember().getVoiceState().inAudioChannel()) event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 		else
 		{
 			event.deferReply().queue();
-			ac.getOrCreateMusicManager(event.getGuild()).skip();
-			
+			ac.acquireMusicManager(event.getGuild()).skip();
+
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("║ Skipping track.", null,
 				TigerGuard.TigerGuardInstance.getSelf().getEffectiveAvatarUrl(), ColorCodes.CONFIRMATION, "This message will auto-delete in 30 seconds.")).queue(msg -> msg.delete().queueAfter(30, TimeUnit.SECONDS));
 		}

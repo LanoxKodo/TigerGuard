@@ -57,7 +57,7 @@ public class ThreadUtilities {
 					{
 						if (failure != null) logger.logErr(LogType.ERROR, failure, null, e);
 						else logger.logErr(LogType.ERROR, "ThreadUtilities executor encountered a failure while trying to sleep", null, e);
-						
+
 						Thread.currentThread().interrupt();
 					}
 				}
@@ -107,10 +107,7 @@ public class ThreadUtilities {
 				if (!doBefore)
 				{
 					success.accept(null);
-					if (!toLoop)
-					{
-						Thread.currentThread().interrupt();
-					}
+					if (!toLoop) Thread.currentThread().interrupt();
 				}
 			}
 		});

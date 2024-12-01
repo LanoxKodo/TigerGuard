@@ -63,8 +63,14 @@ public class PromptColorThreader extends Thread {
 
 				Long roleId = guild.getRolesByName(colorTitle, false).get(0).getIdLong();
 
-				if (a == (colorSpecs.get(0).length-1)) fillStatementAdd += " color" + (a+1) + " = " + roleId + " WHERE id = " + guild.getIdLong() + ";";
-				else fillStatementAdd += " color" + (a+1) + " = " + roleId + ",";
+				if (a == (colorSpecs.get(0).length-1))
+				{
+					fillStatementAdd += " color" + (a+1) + " = " + roleId + " WHERE id = " + guild.getIdLong() + ";";
+				}
+				else
+				{
+					fillStatementAdd += " color" + (a+1) + " = " + roleId + ",";
+				}
 
 				try {
 					tigerguardDB.setGuildColorRolesEntry(fillStatementBase+fillStatementAdd);
@@ -82,12 +88,12 @@ public class PromptColorThreader extends Thread {
 
 		channel.sendMessageEmbeds(embedder.colorEmbed(Triplet.with("╔═════════╗\n        𝘾𝙊𝙇𝙊𝙍𝙎\n╚═════════╝", ColorCodes.TIGER_FUR.value.toString(),
 			"**Care for a color change to your name?**"), roleList, emojis)).addFiles(FileUpload.fromData(icon, "rainbow.png")).queue(a -> {
-				
+
 				if (!tigerguardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
 				{
 					tigerguardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
 				}
-				
+
 				for (String emojiItem : emojis)
 				{
 					a.addReaction(Emoji.fromFormatted(emojiItem)).queue();

@@ -41,7 +41,7 @@ public class Poll implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
@@ -52,15 +52,21 @@ public class Poll implements TGCommand {
 	public void execute(SlashCommandInteractionEvent event)
 	{
 		TigerGuardDB db = TigerGuardDB.getTigerGuardDB();
-		
-		if (!db.checkRow("tempPollData", "id", event.getGuild().getIdLong())) db.addGuildToTempPollTable(event.getGuild().getIdLong());
+
+		if (!db.checkRow("tempPollData", "id", event.getGuild().getIdLong()))
+		{
+			db.addGuildToTempPollTable(event.getGuild().getIdLong());
+		}
 
 		List<Button> buttons = new ArrayList<>();
 		//Consider option logic for closing a poll before its time runs out.
 		//buttons.add(Button.danger("poll-Init-Close", "Close a Poll Early").withEmoji(Emoji.fromFormatted("📊")));
 		buttons.add(Button.success("poll-new", "Create a New Poll").withEmoji(Emoji.fromFormatted("🖋")));
 
-		if (!db.checkForTable(event.getGuild().getIdLong() + "polls")) db.createGuildPollTable(event.getGuild().getIdLong());
+		if (!db.checkForTable(event.getGuild().getIdLong() + "polls"))
+		{
+			db.createGuildPollTable(event.getGuild().getIdLong());
+		}
 
 		event.replyEmbeds(embedder.simpleEmbed("Which option would you like to perform?", null, null, ColorCodes.POLL,
 			"Please indiciate which action you'd like to perform using the buttons below."))

@@ -30,13 +30,13 @@ public class EmbedMessageFactory {
 	{
 		return new EmbedBuilder().setTitle(title).setAuthor(author, null, authorIcon).setColor(color.value).setDescription(text).build();
 	}
-	
+
 	public MessageEmbed pollDuoEmbed(String title, ColorCodes color, String body, Integer yay, Integer nay)
 	{
 		return new EmbedBuilder().setTitle(title).setColor(color.value).setDescription(body)
 			.addField("Yay", yay.toString(), true).addField("Nay", nay.toString(), true).build();
 	}
-	
+
 	public MessageEmbed pollTrioEmbed(String title, ColorCodes color, String body, Integer yay, Integer nay, Integer abs)
 	{
 		return new EmbedBuilder().setTitle(title).setColor(color.value).setDescription(body)
@@ -81,28 +81,25 @@ public class EmbedMessageFactory {
 	{
 		return new EmbedBuilder().setTitle(input.getValue0()).setColor(input.getValue1().value).setImage("attachment://image.png").setDescription(input.getValue3()).setFooter(input.getValue4()).build();
 	}
-	
+
 	public MessageEmbed regularEmbed(String titleIn, String colorIn, String bodyIn)
 	{
 		String title = null;
 		String color = null;
 		String description = null;
-		
-		//Title
+
 		if (titleIn != null && titleIn != "") title = titleIn;
-		//Color
 		if (colorIn != null) color = colorIn;
 		else color = ColorCodes.TIGER_FUR.toHexString();
-		//Description
 		if (bodyIn != null) description = bodyIn;
-		
-		if (title == null || title == "" || title.isEmpty()) return new EmbedBuilder().setColor(Color.decode(color)).setDescription(description.replace("\\n", "\n")).build();
+
+		if (title == null || title.isEmpty()) return new EmbedBuilder().setColor(Color.decode(color)).setDescription(description.replace("\\n", "\n")).build();
 		else return new EmbedBuilder().setTitle(title.replace("\\n", "\n")).setColor(Color.decode(color)).setDescription(description.replace("\\n", "\n")).build();
 	}
-	
+
 	/**
 	 * A basic embed
-	 * 
+	 *
 	 * @param title	- The title for the ember
 	 * @param color	- The ColorCode type for coloring
 	 * @param body	- The regular body text of the embed
@@ -160,7 +157,7 @@ public class EmbedMessageFactory {
 
 	/**
 	 * EmbedMessage provider for music embeds.
-	 * 
+	 *
 	 * @param trackInfo	- The AudioTrackInfo object for the track being played
 	 * @param queueSize	- The size of the queue remaining
 	 * @return
@@ -174,21 +171,21 @@ public class EmbedMessageFactory {
 
         long minutes = durationMod / 60;
         long seconds = durationMod % 60;
-        
+
         String formattedTime = "[";
 		if (hours > 0) formattedTime += hours + ":";
+		
 		if (seconds < 10) formattedTime += minutes + ":0" + seconds + "]";
-	    else formattedTime += minutes + ":" + seconds + "]";
-		
+		else formattedTime += minutes + ":" + seconds + "]";
+
 		EmbedBuilder eb = new EmbedBuilder();
-		eb.setTitle(info.getTitle()).setDescription(info.getAuthor()).setThumbnail(info.getArtworkUrl())
-			.addField("Duration", formattedTime, true).addField("Source", "[link](<" + info.getUri() + ">)", true);
-		
-		if (queueSize > 0) eb.addField("In Queue", String.valueOf(queueSize), true);
-		
+		eb.setTitle(info.getTitle()).setDescription(info.getAuthor()).setColor(ColorCodes.MUSIC.value).setThumbnail(info.getArtworkUrl())
+			.addField("Duration", formattedTime, true).addField("Source", "[link](<" + info.getUri() + ">)", true)
+			.addField("In Queue", String.valueOf(queueSize), true);
+
 		return eb.build();
 	}
-	
+
 	public List<Button> musicActionRowButtonProvider()
 	{
 		List<Button> buttons = new ArrayList<>();
@@ -199,7 +196,7 @@ public class EmbedMessageFactory {
 		return buttons;
 	}
 
-	public MessageEmbed regularVoiceErrorEmbed()
+	public MessageEmbed voiceErrorEmbed()
 	{
 		return new EmbedBuilder().setAuthor("Unable to process this command!").setColor(ColorCodes.N_A.value).setDescription("Sorry, but this command only works while you are in a Voice Channel!").build();
 	}

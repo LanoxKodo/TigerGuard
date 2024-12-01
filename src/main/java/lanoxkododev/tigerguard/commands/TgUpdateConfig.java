@@ -38,7 +38,7 @@ public class TgUpdateConfig implements TGCommand {
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DefaultMemberPermissions getDefaultPermission()
 	{
