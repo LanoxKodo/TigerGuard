@@ -55,7 +55,8 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		if (!member.getUser().isBot())
 		{
 			Long memberCheck = tigerguardDB.getGuildMemberRole(guild.getIdLong());
-			if (guild.getRoleById(memberCheck) != null || guild.getRoleById(memberCheck).getIdLong() != 0)
+			
+			if (memberCheck != null && guild.getRoleById(memberCheck) != null || guild.getRoleById(memberCheck).getIdLong() != 0)
 			{
 				guild.addRoleToMember(member, guild.getRoleById(memberCheck)).queue();
 			}

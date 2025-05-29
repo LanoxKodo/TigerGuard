@@ -21,12 +21,12 @@ public class AudioComplex {
 	private final LavalinkClient client;
     private final Map<Long, GuildMusicManager> musicManagers = new HashMap<>();
 
-    public AudioComplex(LavalinkClient client)
+    public AudioComplex(LavalinkClient client, String sessionID)
     {
         this.client = client;
         instance = this;
 
-        registerLavalinkNodes();
+        registerLavalinkNodes(sessionID);
 		registerLavalinkListeners();
     }
 
@@ -59,9 +59,9 @@ public class AudioComplex {
     	return instance;
     }
 
-    private void registerLavalinkNodes()
+    private void registerLavalinkNodes(String sessionID)
 	{
-		List.of(client.addNode(new NodeOptions.Builder("TigerGuardLavalink", URI.create("ws://localhost:2333"), "youshallnotpass", RegionGroup.US, 5000L)
+		List.of(client.addNode(new NodeOptions.Builder("TigerGuardLavalink", URI.create("ws://localhost:2333"), "youshallnotpass", RegionGroup.US, 5000L, sessionID)
 			.build())).forEach((node) -> {
 				node.on(TrackStartEvent.class).subscribe();
 				node.on(TrackEndEvent.class).subscribe();

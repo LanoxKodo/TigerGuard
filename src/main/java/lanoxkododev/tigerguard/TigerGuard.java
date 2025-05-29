@@ -80,7 +80,7 @@ public class TigerGuard {
     		LavalinkClient client = new LavalinkClient(Helpers.getUserIdFromToken(botToken));
     		client.getLoadBalancer().addPenaltyProvider(new VoiceRegionPenaltyProvider());
 
-    		final var audioComplex = new AudioComplex(client);
+    		final var audioComplex = new AudioComplex(client, "TG_Audio");
 
     		//Command setup - Note: while functional, file needs to be revised updating/removing/adding commands in a more dynamic way, lower priority as no commands are in design or needing immediate changes.
     		final var commandCenter = new CommandCenter(audioComplex);
