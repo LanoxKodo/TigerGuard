@@ -2,16 +2,19 @@ package lanoxkododev.tigerguard.events;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import lanoxkododev.tigerguard.ThreadUtilities;
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class ReactionEvents extends ListenerAdapter {
@@ -26,19 +29,96 @@ public class ReactionEvents extends ListenerAdapter {
 	{
 		Member member = event.getMember();
 
-		if (member != null)
+		if (member != null && !member.getUser().isBot())
 		{
-			if (!member.getUser().isBot())
-			{
-				Guild guild = event.getGuild();
-				Long messageID = event.getMessageIdLong();
+			Guild guild = event.getGuild();
+			Long messageID = event.getMessageIdLong();
+			
+			event.getGuild().getTextChannelById(messageID);
 
-				if (tigerguardDB.checkRow("colorRoles", "id", guild.getIdLong()) && tigerguardDB.basicSelectLong("colorRoles", "embed", "id", guild.getIdLong()).equals(messageID))
-				{
-					colorProcess(event, member, guild);
-				}
+			if (tigerguardDB.checkRow(guild.getIdLong() + "embeds", "id", messageID))
+			{
+				reactionRoleResult(guild, member, event.getReaction().getEmoji().getFormatted(), messageID, "add");
+			}
+			else if (tigerguardDB.checkRow("colorRoles", "id", guild.getIdLong()) && tigerguardDB.basicSelectLong("colorRoles", "embed", "id", guild.getIdLong()).equals(messageID))
+			{
+				colorProcess(event, member, guild);
 			}
 		}
+	}
+	
+	@Override
+	public void onMessageReactionRemove(MessageReactionRemoveEvent event)
+	{
+		Member member = event.getMember();
+		
+		if (member != null && !member.getUser().isBot())
+		{
+			Guild guild = event.getGuild();
+			Long messageID = event.getMessageIdLong();
+			
+			if (tigerguardDB.checkRow(guild.getIdLong() + "embeds", "id", messageID))
+			{
+				reactionRoleResult(guild, member, event.getReaction().getEmoji().getFormatted(), messageID, "remove");
+			}
+		}
+	}
+	
+	private void reactionRoleResult(Guild guild, Member member, String emoji, Long messageID, String eventType)
+	{
+		Role role = getRoleFromMessage(guild, messageID, emoji);
+		
+		if (role != null)
+		{
+			if (eventType.equals("add")) giveRole(guild, member, role);
+			else takeRole(guild, member, role);
+		}
+	}
+	
+	private Role getRoleFromMessage(Guild guild, Long messageID, String emoji)
+	{
+		CompletableFuture<String> future = new CompletableFuture<>();
+		String[][] dataParts = new String[1][];
+		Long guildID = guild.getIdLong();
+		
+		if (tigerguardDB.hasValue(guildID + "embeds", "body", "id", messageID))
+		{
+			dataParts[0] = tigerguardDB.getEmbedBodyData(guildID, messageID).split("\\s+");
+			future.complete(searchData(dataParts[0], emoji));
+		}
+		
+		Long value;
+		
+		try
+		{
+			value = Long.parseLong(future.get());
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.ERROR, "Failure to find, or get, Role from message '" + messageID + " for guild '" + guildID + "'.", "Emoji searched with: " + emoji, e);
+			return null;
+		}
+		
+		return guild.getRoleById(value);
+	}
+	
+	private String searchData(String[] dataParts, String emoji)
+	{
+		ArrayList<String> roles = new ArrayList<>();
+		ArrayList<String> emojis = new ArrayList<>();
+		
+		for (String part : dataParts)
+		{
+			if (part.matches("\\p{So}+") && !part.equals(">")) emojis.add(part);
+			else if (part.startsWith("<@&")) roles.add(part.substring(3, part.length() - 1));
+		}
+		
+		for (int pos = 0; pos < emojis.size(); pos++)
+		{
+			if (emojis.get(pos).equals(emoji)) return roles.get(pos);
+		}
+		
+		return null;
 	}
 
 	private void colorProcess(MessageReactionAddEvent event, Member member, Guild guild)
@@ -113,52 +193,15 @@ public class ReactionEvents extends ListenerAdapter {
 
 	private void handleColorChange(Long roleProvisioned, Member member, Guild guild, ArrayList<Long> colorRoles)
 	{
-		ThreadUtilities.createGenericThread(a -> {
+		ThreadUtilities.createGenericThread(_ -> {
 			List<Role> memberRoles = member.getRoles();
 
 			for (Long role : colorRoles)
 			{
-				if (memberRoles.contains(guild.getRoleById(role)))
-				{
-					guild.removeRoleFromMember(member, guild.getRoleById(role)).queue();
-				}
+				if (memberRoles.contains(guild.getRoleById(role))) takeRole(guild, member, guild.getRoleById(role));
 			}
-			//If role selected was not the sponge, then provision the selected role.
-			if (roleProvisioned != -1L)
-			{
-				guild.addRoleToMember(member, guild.getRoleById(roleProvisioned)).queue();
-			}
-		}, null, null, false, false);
-	}
-
-	@SuppressWarnings("unused")
-	private void detectColorsForRemoval(Long roleProvisioned, Member member, Guild guild, ArrayList<Long> roles)
-	{
-		ThreadUtilities.createGenericThread(a -> {
-			for (Long roleCheck : roles)
-			{
-				List<Role> memberRoles = member.getRoles();
-
-				if (roleCheck != -1L)
-				{
-					if (memberRoles.contains(guild.getRoleById(roleCheck)))
-					{
-						guild.removeRoleFromMember(member, guild.getRoleById(roleCheck)).queue();
-					}
-				}
-				else
-				{
-					if (memberRoles.contains(guild.getRoleById(roleCheck)))
-					{
-						guild.removeRoleFromMember(member, guild.getRoleById(roleCheck)).queue();
-					}
-				}
-			}
-
-			if (roleProvisioned != -1L)
-			{
-				guild.addRoleToMember(member, guild.getRoleById(roleProvisioned)).queue();
-			}
+			
+			if (roleProvisioned != -1L) giveRole(guild, member, guild.getRoleById(roleProvisioned));
 		}, null, null, false, false);
 	}
 
@@ -166,29 +209,14 @@ public class ReactionEvents extends ListenerAdapter {
 	{
 		event.getReaction().removeReaction(event.getUser()).queue();
 	}
-
-	@SuppressWarnings("unused")
-	private Role provideRoleFromString(String roleName, Member member)
+	
+	private void giveRole(Guild guild, Member member, Role role)
 	{
-		Role sample = null;
-
-		List<Role> roles = member.getRoles();
-		sample = roles.stream().filter(role -> role.getName().equals(roleName)).findFirst().orElse(null);
-
-		return sample;
+		guild.addRoleToMember(member, role).queue();
 	}
-
-	@SuppressWarnings("unused")
-	private Role provideRole(Guild guild, Long roleId, Member member)
+	
+	private void takeRole(Guild guild, Member member, Role role)
 	{
-		Role sample = null;
-
-		List<Role> roles = member.getRoles();
-		if (roles.contains(guild.getRoleById(roleId)))
-		{
-			sample = guild.getRoleById(roleId);
-		}
-
-		return sample;
+		guild.removeRoleFromMember(member, role).queue();
 	}
 }

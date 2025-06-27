@@ -64,7 +64,7 @@ public class JoinLeaveEvents extends ListenerAdapter {
 			if (!ArrayUtilities.guildMemberCounter.contains(guild))
 			{
 				ArrayUtilities.guildMemberCounter.add(guild);
-				ThreadUtilities.createNewThread(a -> updateMemberCountChannel(guild), a -> logger.log(LogType.ERROR, "Issue involving guildMemberCounter arraylist."), Duration.ofSeconds(600), false, false);
+				ThreadUtilities.createNewThread(_ -> updateMemberCountChannel(guild), _ -> logger.log(LogType.ERROR, "Issue involving guildMemberCounter arraylist."), Duration.ofSeconds(600), false, false);
 			}
 		}
 		else
@@ -109,7 +109,7 @@ public class JoinLeaveEvents extends ListenerAdapter {
 			if (!ArrayUtilities.guildMemberCounter.contains(guild))
 			{
 				ArrayUtilities.guildMemberCounter.add(guild);
-				ThreadUtilities.createNewThread(a -> updateMemberCountChannel(guild), a -> logger.log(LogType.ERROR, "Issue involving guildMemberCounter arraylist."), Duration.ofSeconds(600), false, false);
+				ThreadUtilities.createNewThread(_ -> updateMemberCountChannel(guild), _ -> logger.log(LogType.ERROR, "Issue involving guildMemberCounter arraylist."), Duration.ofSeconds(600), false, false);
 			}
 		}
 	}
@@ -144,9 +144,10 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		new PermissionThreader(event.getGuild()).start();
 
 		event.getGuild().getDefaultChannel().asTextChannel().sendMessageEmbeds(embedder.simpleEmbed("Thank you for inviting me, allow me to introduce myself briefly!", null, null, ColorCodes.TIGER_FUR,
-			"I am a multi-purpose bot that aims to assist in server management flows with support of dynamicVC logic, music support, reaction role handling, a server-level system and level role system, poll systems and more growing over time!\n\n" +
-			"I am designed as an opt-in bot, this means everything I provide must first be explicitly setup before my handling for certain interactions can work.\n\n**For server admin:**\nRun my command **/tg-view-config** to see what this " +
-			"server can have configured! And run **/tg-update-config** to setup the opt-in details so I may work closer with your server!\n\nIf there are ever any issues with me setting up something to work with this server, please reach out on my support server at https://discord.gg/Gd8NDkyu4V")).queue();
+			"I am a multi-purpose bot that aims to assist in server management flow with support of dynamicVC logic, music support, reaction role handling, a server-level/level-role system, poll systems and more growing over time!\n\n" +
+			"I am designed as an opt-in bot, this means nearly everything I provide must first be explicitly setup before my handling for certain interactions can work.\n\n**To start, server admin:**\nRun my command **/tg-view-config** to " +
+			"see what this server can have configured! And run **/tg-update-config** to see what all might need details I can work with so I may work closer with your server!\n\nIf there are ever any issues with setting up something to work " +
+			"with this server, please reach out on my support server, https://discord.gg/Gd8NDkyu4V, or via the developer, <@200305907572146177>, directly if in the server!")).queue();
 	}
 
 	@Override

@@ -85,7 +85,7 @@ public class LevelRoleRepairThreader extends Thread {
 				catch (Exception e){}
 			}
 
-			roleItems.forEach((a, b) -> {
+			roleItems.forEach((a, _) -> {
 				guild.createRole().setName("Level_" + a + "_Role (Lvl " + a + ")").queue();
 
 				try {

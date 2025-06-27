@@ -193,7 +193,7 @@ public class TimeDates {
 		logger.log(LogType.INFO, "Date boost event engaged, date title: " + currentHoliday.getValue0());
 
 		JDA jda = TigerGuard.getTigerGuard().getJDA();
-		ThreadUtilities.createGenericThread(a -> {
+		ThreadUtilities.createGenericThread(_ -> {
 			jda.getGuilds().forEach(b -> {
 				if (TigerGuardDB.getTigerGuardDB().checkRow("levelRoles", "id", b.getIdLong()))
 				{

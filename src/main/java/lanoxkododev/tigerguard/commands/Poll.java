@@ -9,8 +9,6 @@ import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 public class Poll implements TGCommand {
@@ -28,24 +26,6 @@ public class Poll implements TGCommand {
 	public String getDescription()
 	{
 		return "Open the poll management menu to create or delete a poll.";
-	}
-
-	@Override
-	public boolean isNSFW()
-	{
-		return false;
-	}
-
-	@Override
-	public List<OptionData> getOptions()
-	{
-		return null;
-	}
-
-	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.ENABLED;
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package lanoxkododev.tigerguard.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import lanoxkododev.tigerguard.ThreadUtilities;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -31,11 +32,13 @@ public class Roll implements TGCommand {
 	{
 		return "Roll a die or few and see your rng in action!";
 	}
-
+	
 	@Override
-	public boolean isNSFW()
+	public EnumSet<InteractionContextType> getContexts()
 	{
-		return false;
+		return EnumSet.of(InteractionContextType.GUILD,
+			InteractionContextType.BOT_DM,
+			InteractionContextType.PRIVATE_CHANNEL);
 	}
 
 	@Override
@@ -55,16 +58,10 @@ public class Roll implements TGCommand {
 	}
 
 	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.ENABLED;
-	}
-
-	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
 		event.deferReply().setEphemeral(event.getOption("private").getAsBoolean()).queue();
-		ThreadUtilities.createGenericThread(a -> {
+		ThreadUtilities.createGenericThread(_ -> {
 			class DieRoll {
 				private int sides;
 				private int result;
@@ -103,7 +100,7 @@ public class Roll implements TGCommand {
 						{
 							int dieSides = sides[s];
 							DieRoll dieRoll = new DieRoll(dieSides);
-							rollSets.computeIfAbsent(dieSides, k -> new ArrayList<>()).add(dieRoll);
+							rollSets.computeIfAbsent(dieSides, _ -> new ArrayList<>()).add(dieRoll);
 						}
 					}
 				}

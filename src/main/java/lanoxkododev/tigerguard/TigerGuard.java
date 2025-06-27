@@ -32,12 +32,15 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 /**
- * @author LanoxKodo (Formerly SirBassington)
+ * @author LanoxKodo
+ * https://lanoxkodo.github.io/projects/tigerguard
  *
  * TigerGuard is a Discord Bot made to assist in general server management and processes for server engagement.
  */
 public class TigerGuard {
-
+	
+	String version = "2025m06a";
+	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();
 	TimingThread timeThread;
@@ -45,7 +48,6 @@ public class TigerGuard {
 
 	public static TigerGuard TigerGuardInstance;
 	public static JDA jda;
-	public static String prefix = "~tg"; //Debug prefix for certain commands
 
 	private static boolean DEBUG_MODE = true;
 	protected static boolean STOP = false;
@@ -85,7 +87,7 @@ public class TigerGuard {
     		//Command setup - Note: while functional, file needs to be revised updating/removing/adding commands in a more dynamic way, lower priority as no commands are in design or needing immediate changes.
     		final var commandCenter = new CommandCenter(audioComplex);
 
-    		preJDALoad();
+    		loadBeforeJDA();
 
     		//Will need to use '.useSharding(#, #)' if the bot becomes bogged from higher usage than it currently sees.
     		jda = JDABuilder.createDefault(botToken).setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(client))
@@ -121,13 +123,16 @@ public class TigerGuard {
 		}
 	}
 
-	private void preJDALoad()
+	private void loadBeforeJDA()
 	{
 		new Pages();
 		new TigerGuardDB(util.getValue("address") + ':' + util.getValue("port"), util.getValue("databaseName"), util.getValue("databaseUsername"), util.getValue("databasePassword"));
 	}
 
-	//Diagnostic for reviewal purposes, helps identify DB errors if any occur
+	/**
+	 * Diagnostic for reviewal purposes, helps identify DB errors if any occur if entries do not match what the bot sees.<br>
+	 * eg, if the bot was removed from a server and the bot didn't not process it for some reason, or was offline, the data should be removed. In this case, TODO create this logic later. 
+	 */
 	private void guildReview()
 	{
 		if (jda.getGuilds().size() >= 20)
@@ -182,6 +187,11 @@ public class TigerGuard {
 	public String getName()
 	{
 		return "TigerGuard";
+	}
+	
+	public String getVersion()
+	{
+		return version;
 	}
 
 	public static TigerGuard getTigerGuard()

@@ -2,24 +2,26 @@ package lanoxkododev.tigerguard.commands;
 
 import java.util.EnumSet;
 
-import lanoxkododev.tigerguard.TigerGuardResponses;
+import lanoxkododev.tigerguard.TigerGuard;
+import lanoxkododev.tigerguard.messages.ColorCodes;
+import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 
-public class PingZeTiger implements TGCommand {
+public class Info implements TGCommand {
 
-	TigerGuardResponses tgResponses = new TigerGuardResponses();
-
+	EmbedMessageFactory embedder = new EmbedMessageFactory();
+	
 	@Override
 	public String getName()
 	{
-		return "ping-ze-tiger";
+		return "info";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Ping ze Tiger, get a response if active. Simple!";
+		return "See TigerGuard's info.";
 	}
 	
 	@Override
@@ -33,6 +35,7 @@ public class PingZeTiger implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		event.reply(tgResponses.banter(event.getMember().getEffectiveName())).setEphemeral(true).queue();
+		event.replyEmbeds(embedder.infoEmbed("TigerGuard - " + TigerGuard.getTigerGuard().getVersion(),
+			null, null, ColorCodes.TIGER_FUR, "Written in Java")).queue();
 	}
 }

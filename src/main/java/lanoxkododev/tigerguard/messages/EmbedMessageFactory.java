@@ -9,6 +9,7 @@ import org.javatuples.Quintet;
 import org.javatuples.Triplet;
 
 import dev.arbjerg.lavalink.protocol.v4.TrackInfo;
+import lanoxkododev.tigerguard.TigerGuard;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -29,6 +30,13 @@ public class EmbedMessageFactory {
 	public MessageEmbed simpleEmbed(String title, String author, String authorIcon, ColorCodes color, String text)
 	{
 		return new EmbedBuilder().setTitle(title).setAuthor(author, null, authorIcon).setColor(color.value).setDescription(text).build();
+	}
+	
+	public MessageEmbed infoEmbed(String title, String author, String authorIcon, ColorCodes color, String text)
+	{
+		return new EmbedBuilder().setTitle(title).setAuthor(author, null, authorIcon).setColor(color.value).setDescription(text)
+			.addField("Version", TigerGuard.getTigerGuard().getVersion(), true)
+			.addField("Website", "[link](<lanoxkodo.github.io/projects/tigerguard>)", true).build();
 	}
 
 	public MessageEmbed pollDuoEmbed(String title, ColorCodes color, String body, Integer yay, Integer nay)

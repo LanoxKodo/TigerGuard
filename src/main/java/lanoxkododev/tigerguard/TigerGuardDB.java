@@ -32,42 +32,6 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
-/*
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.javatuples.Pair;
-import org.javatuples.Quartet;
-import org.javatuples.Quintet;
-import org.javatuples.Triplet;
-import org.mariadb.jdbc.Connection;
-import org.mariadb.jdbc.DatabaseMetaData;
-
-import dev.arbjerg.lavalink.protocol.v4.Exception;
-import kotlin.Deprecated;
-import kotlin.time.Duration;
-import lanoxkododev.tigerguard.logging.LogType;
-import lanoxkododev.tigerguard.logging.TigerLogs;
-import lanoxkododev.tigerguard.messages.MessageFactory;
-import lanoxkododev.tigerguard.polls.TigerPolls;
-import lanoxkododev.tigerguard.time.TimeDates;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.utils.FileUpload;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-*/
-
 public class TigerGuardDB {
 
 	MessageFactory messageFactory = new MessageFactory();
@@ -123,7 +87,7 @@ public class TigerGuardDB {
 
 	public static TigerGuardDB getTigerGuardDB()
 	{
-		return tigerGuardDB;// = new TigerGuardDB();
+		return tigerGuardDB;
 	}
 
 	/*
@@ -216,7 +180,7 @@ public class TigerGuardDB {
 	 * Basic boolean returning method.
 	 *
 	 * @param table		 - The table to search within.
-	 * @param column	 - The column that the
+	 * @param column	 - The column that the return needs to be.
 	 * @param where		 - The where clause constraint.
 	 * @param whereInput - The where clause's specifier.
 	 * @return
@@ -243,7 +207,7 @@ public class TigerGuardDB {
 	 * Basic boolean returning method.
 	 *
 	 * @param table		 - The table to search within.
-	 * @param column	 - The column that the
+	 * @param column	 - The column that the return needs to be.
 	 * @param where		 - The where clause constraint.
 	 * @param whereInput - The where clause's specifier.
 	 * @return
@@ -265,12 +229,29 @@ public class TigerGuardDB {
 
 		return found;
 	}
+	
+	public Boolean hasValue(String table, String column, String whereColumnA, Object whereValueA, String whereColumnB, Object whereValueB)
+	{
+		boolean found = false;
+		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + whereColumnA + "` = '" + whereValueA + "' AND `" + whereColumnB + "` = '" + whereValueB + "') AS EXISTS_BY_NAME;";
+		
+		try
+		{
+			found = performQuery(statement).next();
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
+		}
+		
+		return found;
+	}
 
 	/**
 	 * Basic boolean returning method.
 	 *
 	 * @param table		 	- The table to search within.
-	 * @param column	 	- The column that the
+	 * @param column	 	- The column that the return needs to be.
 	 * @param whereColumn	- The where clause constraint column.
 	 * @param whereInput 	- The where clause's condition.
 	 * @return
@@ -381,7 +362,7 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * The Guild's defined Admin role.
+	 * The Guild's defined Admin role. TODO Admin role is not really implemented as the usage of this lines up with what the primary Staff role desigination does; thus all references to this designation in general should be removed eventually.
 	 */
 	public Long getGuildAdminRole(long guild)
 	{
@@ -650,8 +631,10 @@ public class TigerGuardDB {
 	 */
 	public void setEmbedTempData(Quartet<String, String, String, String> input, long guild)
 	{
-		String statement = "UPDATE " + db + "tempEmbedData SET name = ?, title = ?, color = ?, datas = ?, descr = ?, divider = ? WHERE id = " + guild + ";";
+		//String statement = "UPDATE " + db + "tempEmbedData SET name = ?, title = ?, color = ?, datas = ?, descr = ?, divider = ? WHERE id = " + guild + ";";
+		String statement = "UPDATE " + db + "tempEmbedData SET name = ?, title = ?, color = ?, body = ? WHERE guild = " + guild + ";";
 
+		System.out.println("[DEBUG] (1)=" + input.getValue0() + ", (2)=" + input.getValue1() + ", (3)=" + input.getValue2() + ", (4)=" + input.getValue3());
 		try
 		{
 			PreparedStatement ps = perform(statement);
@@ -2114,7 +2097,6 @@ public class TigerGuardDB {
 	 * ######################
 	 */
 
-	//TODO - fix the reference to 'polltable' - current guildInfo table will not support this
 	public void createGuildPollTable(long guild)
 	{
 		performUpdate("CREATE TABLE " + db + guild + "polls (id VARCHAR(45), channeltype VARCHAR(45), channel VARCHAR(45), polltype VARCHAR(20), endtime VARCHAR(45), initiated VARCHAR(10));", LogType.DATABASE_ERROR, "Failure creating poll table for guild " + guild);

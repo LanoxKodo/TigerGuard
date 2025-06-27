@@ -35,6 +35,7 @@ public class ButtonClickEvents extends ListenerAdapter {
 	@Override
 	public void onButtonInteraction(ButtonInteractionEvent event)
 	{
+		event.deferReply().queue(); //Apparently needed by 'roleembed' events way below. Not sure where to place for now so here be the earliest for no particular reason. Both love and hate REST event handling.
 		Guild guild = event.getGuild();
 		Member member = event.getMember();
 		List<Button> buttons = new ArrayList<>();
@@ -53,7 +54,8 @@ public class ButtonClickEvents extends ListenerAdapter {
 		{
 			if (emb1.getFooter() != null && (buttonName != "embedCreatorConfirm" || buttonName != "embedCreatorCancel"))
 			{
-				if (!buttonName.equals("embedCreatorConfirm") && !buttonName.equals("embedCreatorCancel")) val = Integer.parseInt(emb1.getFooter().getText().substring(5));
+				if (!buttonName.equals("embedCreatorConfirm") && !buttonName.equals("embedCreatorCancel") && !buttonName.equals("roleembed-confirm")
+					&& !buttonName.equals("roleembed-cancel")) val = Integer.parseInt(emb1.getFooter().getText().substring(5));
 			}
 		}
 
@@ -100,7 +102,7 @@ public class ButtonClickEvents extends ListenerAdapter {
 					//	event.editMessageEmbeds(embedder.simpleEmbed("Which poll would you like to close?", null, null, ColorCodes.POLL, "Select a poll from the dropdown menu below.")).queue();
 					//	break;
 					case "duo":
-						event.replyModal(new ModalEvents().DuoPoll()).queue(a -> event.getHook().deleteOriginal().queue());
+						event.replyModal(new ModalEvents().DuoPoll()).queue(_ -> event.getHook().deleteOriginal().queue());
 						break;
 					case "trio":
 						buttons.add(Button.secondary("poll-trioA", "Option A"));
@@ -113,10 +115,10 @@ public class ButtonClickEvents extends ListenerAdapter {
 							.setActionRow(buttons).queue();
 						break;
 					case "trioA":
-						event.replyModal(new ModalEvents().TrioPoll('A')).queue(a -> event.getHook().deleteOriginal().queue());
+						event.replyModal(new ModalEvents().TrioPoll('A')).queue(_ -> event.getHook().deleteOriginal().queue());
 						break;
 					case "trioB":
-						event.replyModal(new ModalEvents().TrioPoll('B')).queue(a -> event.getHook().deleteOriginal().queue());
+						event.replyModal(new ModalEvents().TrioPoll('B')).queue(_ -> event.getHook().deleteOriginal().queue());
 						break;
 				}
 				break;
@@ -221,17 +223,32 @@ public class ButtonClickEvents extends ListenerAdapter {
 					case "confirm":
 						{
 							tigerGuardDB.setReactionRoleEmbed(guild.getIdLong(), "custom");
-							event.getMessage().delete().queue(a -> {
-								event.replyEmbeds(embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
-									+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*")).setEphemeral(true).queue();
-							});
+							
+							logger.log(LogType.DEBUG, "Message ID: " + event.getMessage().getIdLong());
+							
+							//event.getMessage().delete().queue();
+							//event.getChannel().sendMessageEmbeds((embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
+							//	+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*"))).queue();
+							
+							deleteMessage(event);
+							//event.getMessage().delete().queue();
+							event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
+								+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*")).setEphemeral(true).queue();
+							
+							//event.getMessage().delete().queue(a -> {
+							//	event.replyEmbeds(embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
+							//		+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*")).setEphemeral(true).queue();
+							//});
 							tigerGuardDB.deleteRow("tempEmbedData", "guild", guild.getIdLong());
 						}
 						break;
 					case "cancel":
-						event.getMessage().delete().queue(a -> {
-							event.replyEmbeds(embedder.simpleEmbed("Cancelling request!", null, null, ColorCodes.FINISHED, "The embed has not been saved as requested.")).setEphemeral(true).queue();
-						});
+						//event.getMessage().delete().queue(a -> {
+						//	event.replyEmbeds(embedder.simpleEmbed("Cancelling request!", null, null, ColorCodes.FINISHED, "The embed has not been saved as requested.")).setEphemeral(true).queue();
+						//});
+						//event.getMessage().delete().queue();
+						deleteMessage(event);
+						event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Cancelling request!", null, null, ColorCodes.FINISHED, "The embed has not been saved as requested.")).setEphemeral(true).queue();
 						tigerGuardDB.deleteRow("tempEmbedData", "guild", guild.getIdLong());
 						break;
 				}
@@ -279,24 +296,26 @@ public class ButtonClickEvents extends ListenerAdapter {
 				}
 				break;
 			case "tigerguardfeature":
+				deleteMessage(event);
+				
 				switch (buttonVariant)
 				{
 					case "delete-colors-confirm":
-						event.getMessage().delete().queue();
+						//event.getMessage().delete().queue();
 						RoleManagement.getINSTANCE().deleteRoles(event, "colors");
 						break;
 					case "delete-colors-cancel":
-						event.getMessage().delete().queue();
+						//deleteMessage(event);
 						event.getHook().sendMessageEmbeds(embedder.simpleEmbed("You selected to not delete the color roles", null, null, ColorCodes.CONFIRMATION,
 							"I will cancel the deletion event.\nShould you need to delete the roles, simply run this command again and select the 'Confirm' option.\n\n" +
 							"This message will auto-delete in 30 seconds.")).setEphemeral(true).queue(msg -> msg.delete().queueAfter(30, TimeUnit.SECONDS));
 						break;
 					case "delete-levels-confirm":
-						event.getMessage().delete().queue();
+						//event.getMessage().delete().queue();
 						RoleManagement.getINSTANCE().deleteRoles(event, "levels");
 						break;
 					case "delete-levels-cancel":
-						event.getMessage().delete().queue();
+						//event.getMessage().delete().queue();
 						event.getHook().sendMessageEmbeds(embedder.simpleEmbed("You selected to not delete the level roles", null, null, ColorCodes.CONFIRMATION,
 								"I will cancel the deletion event.\nShould you need to delete the roles, simply run this command again and select the 'Confirm' option.\n\n" +
 								"This message will auto-delete in 30 seconds.")).setEphemeral(true).queue(msg -> msg.delete().queueAfter(30, TimeUnit.SECONDS));
@@ -304,6 +323,11 @@ public class ButtonClickEvents extends ListenerAdapter {
 				}
 				break;
 		}
+	}
+	
+	private void deleteMessage(ButtonInteractionEvent event)
+	{
+		event.getMessage().delete().queue();
 	}
 
 	private void exceptionReason(ButtonInteractionEvent event)

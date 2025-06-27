@@ -1,18 +1,16 @@
 package lanoxkododev.tigerguard.commands;
 
-import java.util.List;
-
+import lanoxkododev.tigerguard.PermissionValidator;
 import lanoxkododev.tigerguard.TigerGuardDB;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 public class TgViewConfig implements TGCommand {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	PermissionValidator permValidator = new PermissionValidator();
 
 	@Override
 	public String getName()
@@ -27,30 +25,9 @@ public class TgViewConfig implements TGCommand {
 	}
 
 	@Override
-	public boolean isNSFW()
-	{
-		return false;
-	}
-
-	@Override
-	public List<OptionData> getOptions()
-	{
-		return null;
-	}
-
-	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.DISABLED;
-	}
-
-	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if (event.getMember() == event.getGuild().getOwner() ||
-			event.getMember().getRoles().contains(event.getGuild().getRoleById(tigerGuardDB.getGuildAdminRole(event.getGuild().getIdLong()))) ||
-			event.getMember().getRoles().contains(event.getGuild().getRoleById(tigerGuardDB.getGuildStaffRole(event.getGuild().getIdLong()))) ||
-			event.getMember().getRoles().contains(event.getGuild().getRoleById(tigerGuardDB.getGuildSupportingStaffRole(event.getGuild().getIdLong()))))
+		if (permValidator.administrativeAccessBase(event.getGuild(), event.getMember()))
 		{
 			event.deferReply().setEphemeral(true).queue();
 
@@ -70,7 +47,7 @@ public class TgViewConfig implements TGCommand {
 				//Rules Channel - unused: "\n**" + tigerGuardDB.getGuildRuleChannel(event.getGuild()) + "** | Rules channel" +
 
 				"__**Administrative Roles**__\n" +
-				"**" + tigerGuardDB.getGuildAdminRole(event.getGuild().getIdLong()) + "** | Admin role\n" +
+				"**" + tigerGuardDB.getGuildAdminRole(event.getGuild().getIdLong()) + "** | Admin role - internally unused\n" +
 				"\n**" + tigerGuardDB.getGuildStaffRole(event.getGuild().getIdLong()) + "** | Primary Staff role" +
 				"\n**" + tigerGuardDB.getGuildSupportingStaffRole(event.getGuild().getIdLong()) + "** | Secondary Staff role" +
 				"\n**" + tigerGuardDB.getGuildMemberRole(event.getGuild().getIdLong()) + "** | Member role" +

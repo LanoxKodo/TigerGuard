@@ -38,12 +38,12 @@ public class EmbedCreationThreader extends Thread {
 
 		if (!tigerGuardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
 		{
-			tigerGuardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
+			tigerGuardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20) NOT NULL PRIMARY KEY, type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
 		}
 
-		if (!tigerGuardDB.checkRow("tempEmbedData", "id", event.getGuild().getIdLong()))
+		if (!tigerGuardDB.checkRow("tempEmbedData", "guild", event.getGuild().getIdLong()))
 		{
-			tigerGuardDB.firstInsertion("INSERT INTO tigerguarddb.tempEmbedData (id, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
+			tigerGuardDB.firstInsertion("INSERT INTO tigerguarddb.tempEmbedData (guild, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
 		}
 
 		if (tigerGuardDB.countRows(event.getGuild().getIdLong() + "embeds") == 3 && !tigerGuardDB.getGuildPremiumStatus(event.getGuild().getIdLong()))
@@ -158,12 +158,15 @@ public class EmbedCreationThreader extends Thread {
 							embed.setDescription(str);
 						}
 
+						/*
+						 * TODO: Remove logic pertaining to divider. Not needed with newer Discord role showcasings.
 						Long divider = null;
 						if (event.getOption("divider") != null)
 						{
 							divider = event.getOption("divider").getAsLong();
 						}
 						System.out.println(divider);
+						*/
 
 						embed.setFooter("Embed preview; Confirm to save embed : Cancel to not save this embed.\n\nNote: Emoji-reactions will appear in the final embed when it's printed out later on.\n"
 							+ "Note: Attempting to create another embed before confirming or canceling this one will result in this one being nullified!");

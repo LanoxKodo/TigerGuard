@@ -7,7 +7,6 @@ import lanoxkododev.tigerguard.TigerGuardDB;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -29,24 +28,12 @@ public class VcName implements TGCommand {
 	}
 
 	@Override
-	public boolean isNSFW()
-	{
-		return false;
-	}
-
-	@Override
 	public List<OptionData> getOptions()
 	{
 		List<OptionData> options = new ArrayList<>();
 		options.add(new OptionData(OptionType.STRING, "vcname", "The name to change the channel to.", true).setMinLength(1).setMaxLength(28));
 
 		return options;
-	}
-
-	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.ENABLED;
 	}
 
 	@Override

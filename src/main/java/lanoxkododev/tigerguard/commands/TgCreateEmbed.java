@@ -7,7 +7,6 @@ import lanoxkododev.tigerguard.TigerGuardDB;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -19,7 +18,7 @@ public class TgCreateEmbed implements TGCommand {
 	@Override
 	public String getName()
 	{
-		return "create-embed";
+		return "tg-create-embed";
 	}
 
 	@Override
@@ -29,27 +28,15 @@ public class TgCreateEmbed implements TGCommand {
 	}
 
 	@Override
-	public boolean isNSFW()
-	{
-		return false;
-	}
-
-	@Override
 	public List<OptionData> getOptions()
 	{
 		List<OptionData> options = new ArrayList<>();
-		options.add(new OptionData(OptionType.STRING, "embed_name", "The name of the embed that you'll use to identify it later on.", true).setMinLength(4).setMaxLength(20));
+		options.add(new OptionData(OptionType.STRING, "name", "The name of the embed that you'll use to identify it later on.", true).setMinLength(4).setMaxLength(20));
 		options.add(new OptionData(OptionType.STRING, "body", "The body of the embed, formatting supported, max 1900 characters.", true).setMinLength(1).setMaxLength(1900));
 		options.add(new OptionData(OptionType.STRING, "title", "The text the embed will show. Optional, max 100 characters", false).setMinLength(1).setMaxLength(100));
 		options.add(new OptionData(OptionType.STRING, "color", "The hex color that the embed will use. Example: #ff00ff", false).setMinLength(6).setMaxLength(7));
 
 		return options;
-	}
-
-	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.DISABLED;
 	}
 
 	@Override

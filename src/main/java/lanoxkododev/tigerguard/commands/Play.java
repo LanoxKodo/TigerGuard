@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -47,24 +46,12 @@ public class Play implements TGCommand {
 	}
 
 	@Override
-	public boolean isNSFW()
-	{
-		return false;
-	}
-
-	@Override
 	public List<OptionData> getOptions()
 	{
 		List<OptionData> options = new ArrayList<>();
 		options.add(new OptionData(OptionType.STRING, "query", "The item to play. Can be a song or playlist (insert links for playlists).", true).setMinLength(1).setMaxLength(600));
 
 		return options;
-	}
-
-	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.ENABLED;
 	}
 
 	@Override

@@ -9,10 +9,20 @@ import org.jetbrains.annotations.Nullable;
 public class TigerLogs {
 
 	/**
+	 * Glorified println().
+	 * 
+	 * @param logStatement - Statement to be logged.
+	 */
+	public void log(String logStatement)
+	{
+		System.out.println(logStatement);
+	}
+	
+	/**
 	 * Simple system.out.println helper method. Pass an Enum<LogType> to display the severity level of the printed statement and the String of whatever needs to be appended.
 	 *
-	 * @param logVariant - The log severity type.
-	 * @param toLog		 - The string to print after the log type.
+	 * @param logVariant	- The log severity type.
+	 * @param logStatement	- The string to print after the log type.
 	 */
 	public void log(@NotNull Enum<LogType> logVariant, @NotNull String logStatement)
 	{
@@ -30,7 +40,7 @@ public class TigerLogs {
 	/**
 	 * Log method for errors.
 	 *
-	 * @param logVariant 	- The log severity type.
+	 * @param logVariant	- The log severity type.
 	 * @param initialError	- The string to print after the log type.
 	 * @param optStatement	- An optional message to help define an error.
 	 * @param e			 	- The exception being passed to print the stacktrace from.

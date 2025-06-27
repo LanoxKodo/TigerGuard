@@ -1,14 +1,10 @@
 package lanoxkododev.tigerguard.commands;
 
-import java.util.List;
-
 import lanoxkododev.tigerguard.TigerGuardDB;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 
 public class VcSFW implements TGCommand {
@@ -29,21 +25,9 @@ public class VcSFW implements TGCommand {
 	}
 
 	@Override
-	public boolean isNSFW()
+	public boolean isNSFWRelated()
 	{
-		return false;
-	}
-
-	@Override
-	public List<OptionData> getOptions()
-	{
-		return null;
-	}
-
-	@Override
-	public DefaultMemberPermissions getDefaultPermission()
-	{
-		return DefaultMemberPermissions.ENABLED;
+		return true;
 	}
 
 	@Override
