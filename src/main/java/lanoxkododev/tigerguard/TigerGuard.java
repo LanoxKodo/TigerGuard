@@ -1,5 +1,8 @@
 package lanoxkododev.tigerguard;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 
@@ -39,7 +42,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
  */
 public class TigerGuard {
 	
-	String version = "2025m06a";
+	String version = "2025m06b";
 	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();
@@ -91,9 +94,8 @@ public class TigerGuard {
 
     		//Will need to use '.useSharding(#, #)' if the bot becomes bogged from higher usage than it currently sees.
     		jda = JDABuilder.createDefault(botToken).setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(client))
-    			.enableIntents(GatewayIntent.DIRECT_MESSAGE_REACTIONS, GatewayIntent.DIRECT_MESSAGE_TYPING, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EXPRESSIONS,
-    			GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
-    			.enableCache(CacheFlag.VOICE_STATE).setMemberCachePolicy(MemberCachePolicy.ALL).setActivity(Activity.watching("that evil yarn 🧶")).setStatus(OnlineStatus.ONLINE)
+    			.enableIntents(instantiateIntents()).enableCache(CacheFlag.VOICE_STATE).setMemberCachePolicy(MemberCachePolicy.ALL)
+    			.setActivity(Activity.watching("that evil yarn 🧶")).setStatus(OnlineStatus.ONLINE)
     			.addEventListeners(commandCenter, new JoinLeaveEvents(), new ButtonClickEvents(), new ChannelEvents(),
     				new SelectEvents(), new ModalEvents(), new MessageEvents(), new ReactionEvents()).build().awaitReady();
 
@@ -127,6 +129,25 @@ public class TigerGuard {
 	{
 		new Pages();
 		new TigerGuardDB(util.getValue("address") + ':' + util.getValue("port"), util.getValue("databaseName"), util.getValue("databaseUsername"), util.getValue("databasePassword"));
+	}
+	
+	private Collection<GatewayIntent> instantiateIntents()
+	{
+		Collection<GatewayIntent> intents = new ArrayList<>();
+		//DM
+		intents.add(GatewayIntent.DIRECT_MESSAGES);
+		intents.add(GatewayIntent.DIRECT_MESSAGE_REACTIONS);
+		intents.add(GatewayIntent.DIRECT_MESSAGE_TYPING);
+		//Guild
+		intents.add(GatewayIntent.GUILD_EXPRESSIONS);
+		intents.add(GatewayIntent.GUILD_MESSAGES);
+		intents.add(GatewayIntent.GUILD_MESSAGE_REACTIONS);
+		intents.add(GatewayIntent.GUILD_MESSAGE_TYPING);
+		intents.add(GatewayIntent.GUILD_VOICE_STATES);
+		//Priveleged Intents
+		intents.add(GatewayIntent.MESSAGE_CONTENT);
+		intents.add(GatewayIntent.GUILD_MEMBERS);
+		return intents;
 	}
 
 	/**

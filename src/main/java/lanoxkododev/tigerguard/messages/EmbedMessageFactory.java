@@ -36,7 +36,7 @@ public class EmbedMessageFactory {
 	{
 		return new EmbedBuilder().setTitle(title).setAuthor(author, null, authorIcon).setColor(color.value).setDescription(text)
 			.addField("Version", TigerGuard.getTigerGuard().getVersion(), true)
-			.addField("Website", "[link](<lanoxkodo.github.io/projects/tigerguard>)", true).build();
+			.addField("Website", "[link](https://lanoxkodo.github.io/projects/tigerguard)", true).build();
 	}
 
 	public MessageEmbed pollDuoEmbed(String title, ColorCodes color, String body, Integer yay, Integer nay)
@@ -188,7 +188,7 @@ public class EmbedMessageFactory {
 
 		EmbedBuilder eb = new EmbedBuilder();
 		eb.setTitle(info.getTitle()).setDescription(info.getAuthor()).setColor(ColorCodes.MUSIC.value).setThumbnail(info.getArtworkUrl())
-			.addField("Duration", formattedTime, true).addField("Source", "[link](<" + info.getUri() + ">)", true)
+			.addField("Duration", formattedTime, true).addField("Source", "[link](" + info.getUri() + ")", true)
 			.addField("In Queue", String.valueOf(queueSize), true);
 
 		return eb.build();

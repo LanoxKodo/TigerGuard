@@ -71,12 +71,7 @@ public class CommandCenter extends ListenerAdapter {
 			{
 				if (isCommandDifferent(discordCommand, localCommand))
 				{
-					System.out.println("");
-					logger.log(LogType.INFO, "Details for command " + localCommand.getName() + " do not match between local and Discord's endpoint.");
-					logger.log("> " + localCommand.getName() + " | " + discordCommand.getName());
-					logger.log("> " + localCommand.getDescription() + " | " + discordCommand.getDescription());
-					logger.log("> " + localCommand.getDefaultPermission().getPermissionsRaw() + " | " + discordCommand.getDefaultPermissions().getPermissionsRaw());
-					logger.log("> " + localCommand.getOptions().toString() + " | " + discordCommand.getOptions().toString());
+					logger.log(LogType.INFO, "Details for command " + localCommand.getName() + " do not match between local and Discord's endpoint, updating...");
 					
 					if (localCommand.getOptions() == null)
 					{
