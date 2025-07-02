@@ -111,7 +111,7 @@ public class TrackScheduler {
     		}
     		catch (Exception e) {}
     		
-			tigerguardDB.setGuildLiveMusicMessage(guild.getIdLong(), 0);
+			tigerguardDB.setGuildLiveMusicMessage(guild.getIdLong(), 0L);
     	}
     }
 

@@ -65,7 +65,7 @@ public class LevelRoleRepairThreader extends Thread {
 			{
 				try
 				{
-					if (tigerguardDB.hasValue("levelRoles", "role"+a, "id", guild.getIdLong()))
+					if (tigerguardDB.checkIfValueExists("levelRoles", "role"+a, "id", guild.getIdLong()))
 					{
 						Long checked = tigerguardDB.getGuildSingularLevelUpRole(guild.getIdLong(), "role"+a);
 

@@ -19,6 +19,12 @@ public interface TGCommand {
 		return false;
 	}
 
+	/**
+	 * For commands that use PRIVATE_CHANNEL context, this will be unusable until TigerGuard is approved (configured?)
+	 *  to use Activities or such, might also just be something reserved for larger bots, ie the 75 to 100 server verification range.
+	 * 
+	 * @return
+	 */
 	default EnumSet<InteractionContextType> getContexts()
 	{
 		return EnumSet.of(InteractionContextType.GUILD);

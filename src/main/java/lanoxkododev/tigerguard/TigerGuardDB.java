@@ -101,9 +101,8 @@ public class TigerGuardDB {
 	 *
 	 * @param statement	- The statement to perform
 	 * @param type		- The LogType that the error might raise during a failure
-	 * @param error		- The error message that will be output along with the stacktrace for clarity
 	 */
-	private void performUpdate(String statement, LogType type, String error)
+	private void performUpdate(String statement, LogType type)
 	{
 		try
 		{
@@ -111,7 +110,7 @@ public class TigerGuardDB {
 		}
 		catch (Exception e)
 		{
-			logger.logErr(type, error, statement, e);
+			logger.logErr(type, "Failure updating value in database", statement, e);
 		}
 	}
 
@@ -169,980 +168,15 @@ public class TigerGuardDB {
 
 		return ps;
 	}
-
-	/*
-	 * #######################
-	 * TODO: GETTERS & SETTERS
-	 * #######################
-	 */
-
-	/**
-	 * Basic boolean returning method.
-	 *
-	 * @param table		 - The table to search within.
-	 * @param column	 - The column that the return needs to be.
-	 * @param where		 - The where clause constraint.
-	 * @param whereInput - The where clause's specifier.
-	 * @return
-	 */
-	public Boolean hasValue(String table, String column, String where, String whereInput)
-	{
-		boolean found = false;
-		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "') AS EXISTS_BY_NAME;";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			found = rs.next();
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
-		}
-
-		return found;
-	}
-
-	/**
-	 * Basic boolean returning method.
-	 *
-	 * @param table		 - The table to search within.
-	 * @param column	 - The column that the return needs to be.
-	 * @param where		 - The where clause constraint.
-	 * @param whereInput - The where clause's specifier.
-	 * @return
-	 */
-	public Boolean hasValue(String table, String column, String where, Long whereInput)
-	{
-		boolean found = false;
-		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "') AS EXISTS_BY_NAME;";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			found = rs.next();
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
-		}
-
-		return found;
-	}
 	
-	public Boolean hasValue(String table, String column, String whereColumnA, Object whereValueA, String whereColumnB, Object whereValueB)
-	{
-		boolean found = false;
-		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + whereColumnA + "` = '" + whereValueA + "' AND `" + whereColumnB + "` = '" + whereValueB + "') AS EXISTS_BY_NAME;";
-		
-		try
-		{
-			found = performQuery(statement).next();
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
-		}
-		
-		return found;
-	}
-
-	/**
-	 * Basic boolean returning method.
-	 *
-	 * @param table		 	- The table to search within.
-	 * @param column	 	- The column that the return needs to be.
-	 * @param whereColumn	- The where clause constraint column.
-	 * @param whereInput 	- The where clause's condition.
-	 * @return
-	 */
-	public Integer getValue(String table, String column, String where, Object whereInput)
-	{
-		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "') AS EXISTS_BY_NAME;";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			if (rs.next())
-			{
-				return 1;
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
-		}
-
-		return 0;
-	}
-
-	/**
-	 * Basic Long returning method.
-	 *
-	 * @param table		 	- The table to search within.
-	 * @param column	 	- The column that the return needs to be.
-	 * @param whereColumn	- The where clause constraint column.
-	 * @param whereInput 	- The where clause's condition.
-	 * @return
-	 */
-	public Long basicSelectLong(String table, String column, String where, Long whereInput)
-	{
-		String statement = "SELECT `" + column + "` FROM " + db + table + " WHERE `" + where + "` = '" + whereInput + "';";
-		ResultSet rs = performQuery(statement);
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while getting data from table " + table, statement, e);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Get the channel the bot should message to for announcement-like events.
-	 *
-	 * @param guild	- The ID of the guild
-	 * @return
-	 */
-	public Long getServerMessagingChannel(long guild)
-	{
-		//Long channel = this.basicSelectLong("guildInfo", "announcemenChannel", "id", guild);
-		Long channel = (Long) selectSingle("guildInfo", "announcemenChannel", "id", guild, "long");
-
-		if (channel != null)
-		{
-			return channel;
-		}
-		else
-		{
-			Long botChannel = getGuildBotSpamChannel(guild);
-
-			if (botChannel != null)
-			{
-				return botChannel;
-			}
-			else
-			{
-				return null;
-			}
-		}
-	}
-
-
-	/**
-	 * The Guild's premium status
-	 * <br>NOTE: Bot currently does not utilize this feature, this is a placeholder should I open the bot
-	 * 		 up for paid features and such, for now nothing besides debug features use this, if at all.
-	 */
-	public boolean getGuildPremiumStatus(long guild)
-	{
-		String statement = "SELECT premium FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		boolean isPremium = false;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getBoolean(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for premium field for guild " + guild, statement, e);
-		}
-
-		return isPremium;
-	}
-
 	/*
-	 * The Guild's defined Admin role. TODO Admin role is not really implemented as the usage of this lines up with what the primary Staff role desigination does; thus all references to this designation in general should be removed eventually.
+	 * TODO: modern methods
 	 */
-	public Long getGuildAdminRole(long guild)
-	{
-		String statement = "SELECT adminRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				query = rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for adminRole for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined Admin role.
-	 */
-	public void setGuildAdminRole(long guild, long role)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET adminRole = " + role + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for adminRole for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined Primary Staff role.
-	 */
-	public Long getGuildStaffRole(long guild)
-	{
-		String statement = "SELECT primaryStaffRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for primaryStaffRole from the guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined Primary Staff role.
-	 */
-	public void setGuildStaffRole(long guild, long role)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET primaryStaffRole = " + role + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for primaryStaffRole for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined Secondary Staff role.
-	 */
-	public Long getGuildSupportingStaffRole(long guild)
-	{
-		String statement = "SELECT secondaryStaffRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for secondaryStaffRole for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined Secondary Staff role.
-	 */
-	public void setGuildSupportingStaffRole(long guild, long role)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET secondaryStaffRole = " + role + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for secondaryStaffRole for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined CustomVC category.
-	 */
-	public Long getGuildCustomvcCategory(long guild)
-	{
-		String statement = "SELECT dynamicVcCategory FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for dynamicVcCategory for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined CustomVC category.
-	 */
-	public void setGuildCustomvcCategory(long guild, long category)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET dynamicVcCategory = " + category + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for dynamicVcCategory for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined CustomVC voice channel.
-	 */
-	public Long getGuildCustomvcChannel(long guild)
-	{
-		String statement = "SELECT dynamicVcChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for dynamicVcChannel for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined CustomVC voice channel.
-	 */
-	public void setGuildCustomvcChannel(long guild, long channel)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET dynamicVcChannel = " + channel + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for dynamicVcChannel for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined Music text channel.
-	 */
-	public Long getGuildMusicChannel(long guild)
-	{
-		String statement = "SELECT musicChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for musicChannel for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined Music text channel.
-	 */
-	public void setGuildMusicChannel(long guild, long channel)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET musicChannel = " + channel + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for musicChannel for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined Member role.
-	 */
-	public Long getGuildMemberRole(long guild)
-	{
-		String statement = "SELECT memberRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for memberRole for guild " + guild, statement, e);
-		}
-
-		return null;
-	}
-
-	/*
-	 * The Guild's defined Member role.
-	 */
-	public void setGuildMemberRole(long guild, long input)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET memberRole = " + input + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for memberRole for guild " + guild);
-	}
-
-	/*
-	 * The Guild's defined NSFW role.
-	 */
-	public Long getGuildNSFWStatusRole(long guild)
-	{
-		String statement = "SELECT nsfwRole FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for nsfwRole from the guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined NSFW role.
-	 */
-	public void setGuildNSFWStatusRole(long guild, long input)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET nsfwRole = " + input + " WHERE id = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set value for nsfwRole for guild " + guild);
-	}
-
-	/**
-	 * Set temp embed data into the temp data file
-	 *
-	 * @param input - Quintet of strings for: name, title, color, data (roles and emojis in one string), description
-	 */
-	public void setEmbedTempData(Quartet<String, String, String, String> input, long guild)
-	{
-		//String statement = "UPDATE " + db + "tempEmbedData SET name = ?, title = ?, color = ?, datas = ?, descr = ?, divider = ? WHERE id = " + guild + ";";
-		String statement = "UPDATE " + db + "tempEmbedData SET name = ?, title = ?, color = ?, body = ? WHERE guild = " + guild + ";";
-
-		System.out.println("[DEBUG] (1)=" + input.getValue0() + ", (2)=" + input.getValue1() + ", (3)=" + input.getValue2() + ", (4)=" + input.getValue3());
-		try
-		{
-			PreparedStatement ps = perform(statement);
-			ps.setString(1, input.getValue0());
-			ps.setString(2, input.getValue1());
-			ps.setString(3, input.getValue2());
-			ps.setString(4, input.getValue3());
-			ps.executeUpdate();
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure setting values into tempEmbedData table", statement, e);
-		}
-	}
-
-	public Quartet<String, String, String, String> getEmbedTempData(long guild)
-	{
-		String statement = "SELECT name, title, color, body FROM " + db + "tempEmbedData WHERE guild = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				return Quartet.with(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure getting values from tempEmbedData table", statement, e);
-		}
-
-		return null;
-	}
-
-	public void setReactionRoleEmbed(long guild, String type)
-	{
-		Quartet<String, String, String, String> data = getEmbedTempData(guild);
-		String statement = "INSERT INTO " + db + guild + "embeds (name, type, id, title, color, body) VALUES (?,?,?,?,?,?);";
-
-		try
-		{
-			PreparedStatement ps = perform(statement);
-			ps.setString(1, data.getValue0());
-			ps.setString(2, type);
-			ps.setString(3, "null");
-			ps.setString(4, data.getValue1());
-			ps.setString(5, data.getValue2());
-			ps.setString(6, data.getValue3());
-			ps.executeUpdate();
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure setting values from tempEmbedData into embeds for guild " + guild, statement, e);
-		}
-	}
-
-	public void setEmbedId(long guild, String table, long id, String name)
-	{
-		String statement = "UPDATE " + db + guild + "embeds SET id = " + id + " WHERE name = '" + name + "';";
-		performUpdate(statement, LogType.DATABASE_ERROR, "Failures setting id for embed for guild " + guild);
-	}
-
-	public ArrayList<String> getEmbedNames(long guild)
-	{
-		String statement = "SELECT name FROM " + db + guild + "embeds;";
-		ResultSet rs = performQuery(statement);
-		ArrayList<String> embeds = new ArrayList<>();
-
-		try
-		{
-			while (rs.next())
-			{
-				embeds.add(rs.getString(1));
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure getting name of embed for guild " + guild, statement, e);
-		}
-
-		return embeds;
-	}
-
-	/**
-	 * Get the details for the specified embed. Returns the following: Title, Color, Data (Description), and the 'divider' role if applicable.
-	 *
-	 * @param embedName	- The name of the embed as seen in the DB.
-	 * @param guild		- The guild the embed is being called for.
-	 * @return Quartet of Strings of: Type, Title, Color, Body
-	 */
-	public Quartet<String, String, String, String> getEmbedData(String embedName, long guild)
-	{
-		String statement = "SELECT type, title, color, body FROM " + db + guild + "embeds WHERE name = '" + embedName + "';";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				return Quartet.with(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure getting embed data for guild " + guild + " from embed " + embedName, statement, e);
-		}
-
-		return null;
-	}
-
-	public String getColorEmbedBodyData(long guild)
-	{
-		String statement = "SELECT embed FROM " + db + guild + "embeds WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getString(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure getting color embed body data using", statement, e);
-		}
-
-		return null;
-	}
-
-	public String getEmbedBodyData(long guild, long embed)
-	{
-		String statement = "SELECT body FROM " + db + guild + "embeds WHERE id = " + embed + ";";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getString(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure getting embed body data for guild " + guild + " from embed " + embed, statement, e);
-		}
-
-		return null;
-	}
-
-	/*
-	 * The Guild's defined Testing and/or Bot text channel.
-	 */
-	public Long getGuildBotSpamChannel(long guild)
-	{
-		String statement = "SELECT botSpamChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for botSpamChannel for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined Testing and/or Bot text channel.
-	 */
-	public void setGuildBotSpamChannel(long guild, long channel)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET botSpamChannel = " + channel + " WHERE id = " + guild + ";", LogType.DATABASE_ERROR, "Unable to set value for botSpamChannel");
-	}
-
-	public Long getGuildLevelChannel(long guild)
-	{
-		String statement = "SELECT levelChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for levelChannel for guild " + guild + "", statement, e);
-		}
-
-		return query;
-	}
-
-	public void setGuildLevelChannel(long guild, long channel)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET levelChannel = " + channel + " WHERE id = " + guild + ";", LogType.DATABASE_ERROR, "Unable to set value for levelChannel");
-	}
-
-	/*
-	 * The Guild's AudioManger Live Music message.
-	 */
-	public Long getGuildLiveMusicMessage(long guild)
-	{
-		String statement = "SELECT musicMessage FROM " + db + "guildInfo WHERE `id` = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				Object val = rs.getObject(1);
-				if (val == null)
-				{
-					return null;
-				}
-
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for musicMessage for guild " + guild, statement, e);
-		}
-
-		return null;
-	}
-
-	/*
-	 * The Guild's AudioManger Live Music message.
-	 */
-	public void setGuildLiveMusicMessage(long guild, long messageId)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET musicMessage = " + messageId + " WHERE `id` = " + guild + ";", LogType.DATABASE_ERROR, "Unable to set value for musicMessage");
-	}
-
-	/*
-	 * The Guild's defined Rules text channel.
-	 */
-	public Long getGuildRuleChannel(long guild)
-	{
-		String statement = "SELECT ruleChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for ruleChannel for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * The Guild's defined Rules text channel.
-	 */
-	public void setGuildRuleChannel(long guild, long channelId)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET ruleChannel = " + channelId + " WHERE id = " + guild + ";", LogType.DATABASE_ERROR, "Unable to set value for ruleChannel for guild " + guild);
-	}
-
-	public void setGuildKnownLevelUpRoleCount(long guild, int number)
-	{
-		performUpdate("UPDATE " + db + "levelRoles SET knownLevelRoles = " + number + " WHERE id = " + guild + ";", LogType.DATABASE_ERROR, "Unable to set value for knownLevelRoles for guild " + guild);
-	}
-
-	public int getGuildKnownLevelUpRoleCount(long guild)
-	{
-		String statement = "SELECT knownLevelRoles FROM " + db + "levelRoles WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		int query = 0;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getInt(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for knownLevelRoles for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/**
-	 * @deprecated - This was used for the legacy logic where each guild had their own lvlRoles table. Universal table now exists
-	 * @param statement
-	 */
-	@Deprecated
-	public void setGuildLevelUpRoleColumns(String statement)
-	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set level role value");
-	}
-
-	public void setGuildLevelUpRoleColumnBlankData(String statement)
-	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set blank level role value");
-	}
-
-	/**
-	 * @deprecated - replaced by {@link #getGuildKnownLevelUpRoleCount(long)}
-	 * @param guild
-	 * @return
-	 */
-	@Deprecated
-	public int getGuildLevelUpRoles(long guild)
-	{
-		String statement = "SELECT knownLevelRoles FROM " + db + "levelRoles WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		int query = 0;
-		try
-		{
-			while (rs.next())
-			{
-				return rs.getInt(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for knownLevelRoles for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	public void setGuildLevelUpRoles(long guild, String statement)
-	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set guild level roles for guild " + guild);
-	}
-
-	public Long getSingularRole(String tableName, String column, Long guild)
-	{
-		String statement = "SELECT " + column + " FROM " + db + tableName + " WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				query = rs.getLong(column);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the singular role with the provided statment", statement, e);
-		}
-
-		return query;
-	}
-
-	public Long getGuildSingularLevelUpRole(Long guild, String column)
-	{
-		String statement = "SELECT " + column + " FROM " + db + "lvlroles WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		Long query = null;
-		try
-		{
-			while (rs.next())
-			{
-				query = rs.getLong(column);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the singular role using", statement, e);
-		}
-
-		return query;
-	}
-
-	public void setGuildSingularLevelUpRole(String statement)
-	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set the level role data");
-	}
-
-	public void setGuildColorRolesEntry(String statement)
-	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to set the color roles data");
-	}
-
-	public void setGuildSizeChannel(long guild, long inputId)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET serverSizeChannel = " + inputId + " WHERE id = " + guild + ";", LogType.DATABASE_ERROR, "Unable to set value for serverSizeChannel for guild " + guild);
-	}
-
-	public Long getGuildSizeChannel(long guild)
-	{
-		Long query = null;
-		String statement = "SELECT guildSizeChannel FROM " + db + "guildInfo WHERE id = " + guild + ";";
-		ResultSet rs = performQuery(statement);
-
-		try
-		{
-			while (rs.next())
-			{
-				query = rs.getLong(1);
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_ERROR, "Unable to find the resource for guildSizeChannel for guild " + guild, statement, e);
-		}
-
-		return query;
-	}
-
-	/*
-	 * ##########################
-	 * TODO: CHECKERS AND HELPERS
-	 * ##########################
-	 */
-
-	public void deleteColumn(long guild, String statement)
-	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to delete the requested column from the table for guild " + guild);
-	}
-
-	public void deleteRow(String table, String column, Long input)
-	{
-		performUpdate("DELETE FROM " + db + table + " WHERE " + column + " = " + input + ";", LogType.DATABASE_ERROR, "Unable to delete row using provided statment");
-	}
-
-	public void deleteRow(String table, String column, String input)
-	{
-		performUpdate("DELETE FROM " + db + table + " WHERE " + column + " = '" + input + "';", LogType.DATABASE_ERROR, "Unable to delete row using provided statment");
-	}
-
-	/**
-	 * Basic update method.
-	 *
-	 * @param table		 - The table to update within.
-	 * @param column	 - The column that needs to have an updated value inserted.
-	 * @param input		 - The value to put into the specified column.
-	 * @param where		 - The where clause constraint column.
-	 * @param whereInput - The where clause's specifier.
-	 */
-	public void basicUpdate(String table, String column, String input, String where, String whereInput)
-	{
-		String statement = "UPDATE " + db + table + " SET " + column + " = " + input + " WHERE " + where + " = '" + whereInput + "';";
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to complete singular statement with the provided statement");
-	}
-
-	/**
-	 * Basic update method.
-	 *
-	 * @param table		 - The table to update within.
-	 * @param column	 - The column that needs to have an updated value inserted.
-	 * @param input		 - The value to put into the specified column.
-	 * @param where		 - The where clause constraint column.
-	 * @param whereInput - The where clause's specifier.
-	 */
-	public void basicUpdate(String table, String column, Object input, String where, Object whereInput)
-	{
-		String statement = "UPDATE " + db + table + " SET " + column + " = " + input + " WHERE " + where + " = '" + whereInput + "';";
-		performUpdate(statement, LogType.DATABASE_ERROR, "Unable to complete singular statement with the provided statement");
-	}
-
-	public int countRows(String table)
-	{
-		int count = 0;
-		String statement = "SELECT COUNT(*) FROM " + db + table + ";";
-
-		try
-		{
-			//ResultSet query = performQuery("SELECT COUNT(*) FROM tigerguard_db." + table).executeQuery();
-			ResultSet query = performQuery(statement);
-
-			while (query.next())
-			{
-				count = query.getInt(1);
-			}
-		}
-		catch (SQLException e)
-		{
-			logger.logErr(LogType.DATABASE_WARNING, "Failure to grab row count from table " + table, statement, e);
-		}
-
-		return count;
-	}
-
+	
 	/**
 	 * Check if the provided table exists in the database.
 	 *
 	 * @param table - title of the table to be found.
-	 * @return		- Boolean, true is table exists, else false.
 	 */
 	public boolean checkForTable(String table)
 	{
@@ -1166,43 +200,82 @@ public class TigerGuardDB {
 
 		return found;
 	}
-
+	
 	/**
-	 * Method to insert data into a row or column as specified by the passed statement for the first time
+	 * Basic boolean returning method.
 	 *
-	 * @param statement - The statement handling the first-insertion
+	 * @param table		 - The table to search within.
+	 * @param column	 - The column that the return would be in
+	 * @param where		 - The where clause constraint.
+	 * @param whereInput - The where clause's condition.
+	 * @return
 	 */
-	public void firstInsertion(String statement)
+	public boolean checkIfValueExists(String table, String column, String where, Object whereVal)
 	{
-		performUpdate(statement, LogType.DATABASE_ERROR, "Failure with first-insertion using the provided statement");
-	}
+		boolean found = false;
+		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + where + "` = '" + whereVal + "') AS EXISTS_BY_NAME;";
+		ResultSet rs = performQuery(statement);
 
-	/**
-	 * Check database for any entries in the voiceTracker table.
-	 */
-	public ArrayList<Triplet<Long, Long, Long>> bootVoiceVerify()
-	{
-		String statement = "SELECT * FROM " + db + "voiceTracker";
-		ArrayList<Triplet<Long, Long, Long>> array = new ArrayList<>();
 		try
 		{
-			ResultSet rs = performQuery(statement);
-			//ResultSet rs = prepare(statement).executeQuery();
-
-			while (rs.next())
-			{
-				array.add(Triplet.with(rs.getLong(1), rs.getLong(2), rs.getLong(3)));
-				break;
-			}
-
-			return array;
+			found = rs.next();
 		}
 		catch (Exception e)
 		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error getting data from voiceTracker using", statement, e);
+			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
 		}
 
-		return null;
+		return found;
+	}
+	
+	/**
+	 * Basic boolean returning method.
+	 *
+	 * @param table		- The table to search within
+	 * @param column	- The column that the return would be in
+	 * @param whereColA	- The first where clause constraint
+	 * @param whereValA - The first where clause's condition
+	 * @param whereColA	- The second where clause constraint
+	 * @param whereValA - The second where clause's condition
+	 * @return
+	 */
+	public boolean checkIfValueExists(String table, String column, String whereColA, Object whereValA, String whereColB, Object whereValB)
+	{
+		boolean found = false;
+		String statement = "SELECT EXISTS(SELECT " + column + " FROM " + db + table + " WHERE `" + whereColA + "` = '" + whereValA + "' AND `" + whereColB + "` = '" + whereValB + "') AS EXISTS_BY_NAME;";
+		
+		try
+		{
+			found = performQuery(statement).next();
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Error encountered while checking table for a value", statement, e);
+		}
+		
+		return found;
+	}
+
+	public Integer countRows(String table)
+	{
+		int count = 0;
+		String statement = "SELECT COUNT(*) FROM " + db + table + ";";
+
+		try
+		{
+			ResultSet query = performQuery(statement);
+
+			while (query.next())
+			{
+				count = query.getInt(1);
+			}
+		}
+		catch (SQLException e)
+		{
+			logger.logErr(LogType.DATABASE_WARNING, "Failure to grab row count from table " + table, statement, e);
+		}
+
+		return count;
 	}
 
 	/**
@@ -1212,31 +285,7 @@ public class TigerGuardDB {
 	 */
 	public void createTable(String statement)
 	{
-		performUpdate("CREATE TABLE " + db + statement, LogType.DATABASE_ERROR, "Failure creating table from the provided statement");
-	}
-
-	/**
-	 * Check if the guild is in the guildInfo database file.
-	 *
-	 * @param guild - Long ID of the guild to search for.
-	 * @return	    - Boolean, true is guild is present, else false.
-	 */
-	public boolean checkForGuild(Long guild)
-	{
-		boolean found = false;
-		String statement = "SELECT EXISTS(SELECT * FROM " + db + "guildInfo WHERE id = " + guild + ") AS EXISTS_BY_NAME;";
-
-		try
-		{
-			ResultSet rs = performQuery(statement);
-			found = rs.next();
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_WARNING, "Error occurred while checking if guild " + guild + " exists in database", statement, e);
-		}
-
-		return found;
+		performUpdate("CREATE TABLE " + db + statement, LogType.DATABASE_ERROR);
 	}
 
 	/**
@@ -1247,46 +296,14 @@ public class TigerGuardDB {
 	 * @param searchItem - The data the column should have if it exists.
 	 * @return
 	 */
-	public boolean checkRow(String table, String column, Long searchItem)
+	public boolean checkRow(String table, String column, Object searchItem)
 	{
 		boolean found = false;
-		String statement = String.format("SELECT EXISTS(SELECT * FROM " + db + "%s WHERE %s = %d) AS EXISTS_BY_NAME", table, column, searchItem);
+		String statement = String.format("SELECT EXISTS(SELECT * FROM " + db + "%s WHERE %s = %s) AS EXISTS_BY_NAME", table, column, searchItem);
 
 		try
 		{
 			ResultSet rs = performQuery(statement);
-			//ResultSet rs = prepare(input).executeQuery();
-			while (rs.next())
-			{
-				found = rs.getBoolean(1);
-				break;
-			}
-		}
-		catch (Exception e)
-		{
-			logger.logErr(LogType.DATABASE_WARNING, "Failure attempting to find row in the database", statement, e);
-		}
-
-		return found;
-	}
-
-	/**
-	 * Check if the specified row is found in the specified table in the DB with a specifier in the where clause.
-	 *
-	 * @param table		 - The table to search in.
-	 * @param column	 - The column to search by.
-	 * @param searchItem - The data the column should have if it exists.
-	 * @return
-	 */
-	public boolean checkRow(String table, String column, String searchItem)
-	{
-		boolean found = false;
-		String statement = String.format("SELECT EXISTS(SELECT * FROM " + db + "%s WHERE `%s` = '%s') AS EXISTS_BY_NAME", table, column, searchItem);
-
-		try
-		{
-			ResultSet rs = performQuery(statement);
-			//ResultSet rs = prepare(input).executeQuery();
 			while (rs.next())
 			{
 				found = rs.getBoolean(1);
@@ -1324,72 +341,622 @@ public class TigerGuardDB {
 		return found;
 	}
 
-	/**
-	 * Return the Long value of the selection statement.
-	 *
-	 * @param guild		 - The guild ID to look by.
-	 * @param searchItem - The ID in question to look for.
-	 * @return
+	/*
+	 * ######################
+	 * TODO: CORE GET METHODS
+	 * ######################
 	 */
-	public Long selectSingle(String table, long guild, long searchItem)
+	
+	/**
+	 * Get sought value as Booealn.
+	 * 
+	 * @param table		- The table to search within
+	 * @param column	- The column that the value would be in
+	 * @param where		- The where clause constraint
+	 * @param whereVal	- The where clause's condition
+	 * @return	- Boolean result
+	 */
+	public Boolean getValueBoolean(String table, String column, String where, Object whereVal)
 	{
-		Long result = null;
-		String statement = String.format("SELECT %s FROM " + db + "%s WHERE id = %d", searchItem, table, guild);
+		String statement = "SELECT `" + column + "` FROM " + db + table + " WHERE `" + where + "` = '" + whereVal + "';";
+		
 		try
 		{
 			ResultSet rs = performQuery(statement);
-			//ResultSet query = prepare(statement).executeQuery();
-
-			while (rs.next())
-			{
-				result = rs.getLong(1);
-			}
+			while (rs.next()) return rs.getBoolean(1);
 		}
 		catch (Exception e)
 		{
-			logger.logErr(LogType.DATABASE_ERROR, "Error getting SELECT request using statement", statement, e);
+			logger.logErr(LogType.DATABASE_ERROR, "Failure executing statement", statement, e);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Get sought value as Integer.
+	 * 
+	 * @param table		- The table to search within
+	 * @param column	- The column that the value would be in
+	 * @param where		- The where clause constraint
+	 * @param whereVal	- The where clause's condition
+	 * @return	- Integer result
+	 */
+	public Integer getValueInteger(String table, String column, String where, Object whereVal)
+	{
+		String statement = "SELECT `" + column + "` FROM " + db + table + " WHERE `" + where + "` = '" + whereVal + "';";
+		
+		try
+		{
+			ResultSet rs = performQuery(statement);
+			while (rs.next()) return rs.getInt(1);
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure executing statement", statement, e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get sought value as Long.
+	 * 
+	 * @param table		- The table to search within
+	 * @param column	- The column that the value would be in
+	 * @param where		- The where clause constraint
+	 * @param whereVal	- The where clause's condition
+	 * @return	- Long result
+	 */
+	public Long getValueLong(String table, String column, String where, Object whereVal)
+	{
+		String statement = "SELECT `" + column + "` FROM " + db + table + " WHERE `" + where + "` = '" + whereVal + "';";
+		
+		try
+		{
+			ResultSet rs = performQuery(statement);
+			while (rs.next()) return rs.getLong(1);
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure executing statement", statement, e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get sought value as String.
+	 * 
+	 * @param table			- The table to search within
+	 * @param column		- The column that the value would be in
+	 * @param where			- The constraint column in the WHERE portion
+	 * @param whereVal		- The constraint item in the WHERE portion
+	 * @return	- String result
+	 */
+	public String getValueString(String table, String column, String where, Object whereVal)
+	{
+		String statement = String.format("SELECT %s FROM " + db + "%s WHERE %s = %s", column, table, where, whereVal.toString());
+
+		try
+		{
+			ResultSet rs = performQuery(statement);
+			while (rs.next()) return rs.getString(1);
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure executing statement", statement, e);
 		}
 
-		return result;
+		return null;
+	}
+	
+	/**
+	 * Get sought data as ArrayList of String.
+	 * 
+	 * @param table		- The table to search within
+	 * @param column	- The column that the data would be in
+	 * @return	- ArrayList of String result(s)
+	 */
+	public ArrayList<String> getValueStringArray(String table, String column)
+	{
+		String statement = String.format("SELECT %s FROM %s%s", column, db, table);
+		ArrayList<String> array = new ArrayList<>();
+
+		try
+		{
+			ResultSet rs = performQuery(statement);
+			while (rs.next())
+			{
+				array.add(rs.getString(1));
+			}
+			
+			return array;
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure executing statement", statement, e);
+		}
+		
+		return null;
+	}
+
+	/*
+	 * ######
+	 * ######
+	 * ######
+	 */
+
+	/**
+	 * Get the channel the bot should message to for announcement-like events.
+	 *
+	 * @param guild	- The ID of the guild
+	 * @return
+	 */
+	public Long getServerMessagingChannel(Long guild)
+	{
+		Long channel = getValueLong("guildInfo", "announcementChannel", "guild", guild);
+
+		if (channel != null) return channel;
+		else
+		{
+			Long botChannel = getGuildBotSpamChannel(guild);
+
+			if (botChannel != null) return botChannel;
+			else return null;
+		}
+	}
+
+
+	/**
+	 * The Guild's premium status
+	 * <br>NOTE: Bot currently does not utilize this feature, this is a placeholder should I open the bot
+	 * 		 up for paid features and such, for now nothing besides debug features use this, if at all.
+	 */
+	public boolean getGuildPremiumStatus(Long guild)
+	{
+		return getValueBoolean("guildInfo", "premium", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Admin role. TODO Admin role is not really implemented as the usage of this lines up with what the primary Staff role desigination does; thus all references to this designation in general should be removed eventually.
+	 */
+	public Long getGuildAdminRole(Long guild)
+	{
+		return getValueLong("guildInfo", "adminRole", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Admin role.
+	 */
+	public void setGuildAdminRole(Long guild, Long role)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET adminRole = " + role + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined Primary Staff role.
+	 */
+	public Long getGuildStaffRole(Long guild)
+	{
+		return getValueLong("guildInfo", "primaryStaffRole", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Primary Staff role.
+	 */
+	public void setGuildStaffRole(Long guild, Long role)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET primaryStaffRole = " + role + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined Secondary Staff role.
+	 */
+	public Long getGuildSupportingStaffRole(Long guild)
+	{
+		return getValueLong("guildInfo", "secondaryStaffRole", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Secondary Staff role.
+	 */
+	public void setGuildSupportingStaffRole(Long guild, Long role)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET secondaryStaffRole = " + role + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined CustomVC category.
+	 */
+	public Long getGuildCustomvcCategory(Long guild)
+	{
+		return getValueLong("guildInfo", "dynamicVcCategory", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined CustomVC category.
+	 */
+	public void setGuildCustomvcCategory(Long guild, Long category)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET dynamicVcCategory = " + category + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined CustomVC voice channel.
+	 */
+	public Long getGuildCustomvcChannel(Long guild)
+	{
+		return getValueLong("guildInfo", "dynamicVcChannel", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined CustomVC voice channel.
+	 */
+	public void setGuildCustomvcChannel(Long guild, Long channel)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET dynamicVcChannel = " + channel + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined Music text channel.
+	 */
+	public Long getGuildMusicChannel(Long guild)
+	{
+		return getValueLong("guildInfo", "musicChannel", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Music text channel.
+	 */
+	public void setGuildMusicChannel(Long guild, Long channel)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET musicChannel = " + channel + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined Member role.
+	 */
+	public Long getGuildMemberRole(Long guild)
+	{
+		return getValueLong("guildInfo", "memberRole", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Member role.
+	 */
+	public void setGuildMemberRole(Long guild, Long input)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET memberRole = " + input + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined NSFW role.
+	 */
+	public Long getGuildNSFWStatusRole(Long guild)
+	{
+		return getValueLong("guildInfo", "nsfwRole", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined NSFW role.
+	 */
+	public void setGuildNSFWStatusRole(Long guild, Long input)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET nsfwRole = " + input + " WHERE guild = " + guild;
+		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
 	/**
-	 * @param table				- The table the data is within
-	 * @param column			- The column the data is within
-	 * @param constraintColumn	- The constraint column in the WHERE portion
-	 * @param constraintData	- The constraint item in the WHERE portion
-	 * @param objectType		- String or Long
-	 * @return
+	 * Set temp embed data into the temp data file
+	 *
+	 * @param input - Quintet of strings for: name, title, color, data (roles and emojis in one string), description
 	 */
-	public Object selectSingle(Object table, Object column, Object constraintColumn, Object constraintData, String objectType)
+	public void setEmbedTempData(Quartet<String, String, String, String> input, Long guild)
 	{
-		String statement = String.format("SELECT %s FROM " + db + "%s WHERE %s = %s", column.toString(), table.toString(), constraintColumn.toString(), constraintData.toString());
+		String statement = "UPDATE " + db + "tempEmbedData SET name = ?, title = ?, color = ?, body = ? WHERE guild = " + guild + ";";
 
 		try
 		{
-			ResultSet rs = performQuery(statement);
-			//ResultSet query = prepare(statement).executeQuery();
+			PreparedStatement ps = perform(statement);
+			ps.setString(1, input.getValue0());
+			ps.setString(2, input.getValue1());
+			ps.setString(3, input.getValue2());
+			ps.setString(4, input.getValue3());
+			ps.executeUpdate();
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure setting values into tempEmbedData table", statement, e);
+		}
+	}
 
+	public Quartet<String, String, String, String> getEmbedTempData(Long guild)
+	{
+		String statement = "SELECT name, title, color, body FROM " + db + "tempEmbedData WHERE guild = " + guild + ";";
+		ResultSet rs = performQuery(statement);
+
+		try
+		{
 			while (rs.next())
 			{
-				switch (objectType.toLowerCase())
-				{
-					case "string":
-					{
-						return rs.getString(1);
-					}
-					case "long":
-					{
-						return rs.getLong(1);
-					}
-					default:
-						throw new IllegalArgumentException("Unsupported data type: " + objectType);
-				}
+				return Quartet.with(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
 			}
 		}
 		catch (Exception e)
 		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure with select statement to return a value", statement, e);
+			logger.logErr(LogType.DATABASE_ERROR, "Failure getting values from tempEmbedData table", statement, e);
+		}
+
+		return null;
+	}
+
+	public void setReactionRoleEmbed(Long guild, String type)
+	{
+		Quartet<String, String, String, String> data = getEmbedTempData(guild);
+		String statement = "INSERT INTO " + db + guild + "embeds (name, type, message, title, color, body) VALUES (?,?,?,?,?,?);";
+
+		try
+		{
+			PreparedStatement ps = perform(statement);
+			ps.setString(1, data.getValue0());
+			ps.setString(2, type);
+			ps.setString(3, "null");
+			ps.setString(4, data.getValue1());
+			ps.setString(5, data.getValue2());
+			ps.setString(6, data.getValue3());
+			ps.executeUpdate();
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure setting values from tempEmbedData into embeds for guild " + guild, statement, e);
+		}
+	}
+
+	public void setEmbedId(Long guild, String table, Long message, String name)
+	{
+		String statement = "UPDATE " + db + guild + "embeds SET message = " + message + " WHERE name = '" + name + "';";
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public ArrayList<String> getEmbedNames(Long guild)
+	{
+		return getValueStringArray(guild + "embeds", "name");
+	}
+
+	/**
+	 * Get the details for the specified embed. Returns the following: Title, Color, Data (Description), and the 'divider' role if applicable.
+	 *
+	 * @param embedName	- The name of the embed as seen in the DB.
+	 * @param guild		- The guild the embed is being called for.
+	 * @return Quartet of Strings of: Type, Title, Color, Body
+	 */
+	public Quartet<String, String, String, String> getEmbedData(String embedName, Long guild)
+	{
+		String statement = "SELECT type, title, color, body FROM " + db + guild + "embeds WHERE name = '" + embedName + "';";
+		ResultSet rs = performQuery(statement);
+
+		try
+		{
+			while (rs.next())
+			{
+				return Quartet.with(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4));
+			}
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure getting embed data for guild " + guild + " from embed " + embedName, statement, e);
+		}
+
+		return null;
+	}
+
+	public String getEmbedBodyData(Long guild, Long embed)
+	{
+		return getValueString(guild + "embeds", "body", "message", embed);
+	}
+
+	/*
+	 * The Guild's defined Testing and/or Bot text channel.
+	 */
+	public Long getGuildBotSpamChannel(Long guild)
+	{
+		return getValueLong("guildInfo", "botSpamChannel", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Testing and/or Bot text channel.
+	 */
+	public void setGuildBotSpamChannel(Long guild, Long channel)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET botSpamChannel = " + channel + " WHERE guild = " + guild + ";";
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public Long getGuildLevelChannel(Long guild)
+	{
+		return getValueLong("guildInfo", "levelChannel", "guild", guild);
+	}
+
+	public void setGuildLevelChannel(Long guild, Long channel)
+	{
+		String statement = "UPDATE " + db + "guildInfo SET levelChannel = " + channel + " WHERE guild = " + guild + ";";
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's AudioManger Live Music message.
+	 */
+	public Long getGuildLiveMusicMessage(Long guild)
+	{
+		return getValueLong("guildInfo", "musicMessage", "guild", guild);
+	}
+
+	/*
+	 * The Guild's AudioManger Live Music message.
+	 */
+	public void setGuildLiveMusicMessage(Long guild, Long message)
+	{
+		performUpdate("UPDATE " + db + "guildInfo SET musicMessage = " + message + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
+	}
+
+	/*
+	 * The Guild's defined Rules text channel.
+	 */
+	public Long getGuildRuleChannel(Long guild)
+	{
+		return getValueLong("guildInfo", "ruleChannel", "guild", guild);
+	}
+
+	/*
+	 * The Guild's defined Rules text channel.
+	 */
+	public void setGuildRuleChannel(Long guild, Long channel)
+	{
+		performUpdate("UPDATE " + db + "guildInfo SET ruleChannel = " + channel + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
+	}
+
+	public void setGuildKnownLevelUpRoleCount(Long guild, Integer number)
+	{
+		performUpdate("UPDATE " + db + "levelRoles SET knownLevelRoles = " + number + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
+	}
+
+	public Integer getGuildKnownLevelUpRoleCount(Long guild)
+	{
+		return getValueInteger("levelRoles", "knownLevelRoles", "guild", guild);
+	}
+
+	public void setGuildLevelUpRoleColumnBlankData(String statement)
+	{
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public void setGuildLevelUpRoles(Long guild, String statement)
+	{
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public Long getSingularRole(String tableName, String column, Long guild)
+	{
+		return getValueLong(tableName, column, "guild", guild);
+	}
+
+	public Long getGuildSingularLevelUpRole(Long guild, String column)
+	{
+		return getValueLong("levelRoles", column, "guild", guild);
+	}
+
+	public void setGuildSingularLevelUpRole(String statement)
+	{
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public void setGuildColorRolesEntry(String statement)
+	{
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public void setGuildSizeChannel(Long guild, Long input)
+	{
+		performUpdate("UPDATE " + db + "guildInfo SET serverSizeChannel = " + input + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
+	}
+
+	public Long getGuildSizeChannel(Long guild)
+	{
+		return getValueLong("guildInfo", "guildSizeChannel", "guild", guild);
+	}
+
+	/*
+	 * ##########################
+	 * TODO: CHECKERS AND HELPERS
+	 * ##########################
+	 */
+
+	public void deleteColumn(String statement)
+	{
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	public void deleteRow(String table, String column, Long input)
+	{
+		performUpdate("DELETE FROM " + db + table + " WHERE " + column + " = " + input + ";", LogType.DATABASE_ERROR);
+	}
+
+	public void deleteRow(String table, String column, String input)
+	{
+		performUpdate("DELETE FROM " + db + table + " WHERE " + column + " = '" + input + "';", LogType.DATABASE_ERROR);
+	}
+
+	/**
+	 * Basic update method.
+	 *
+	 * @param table		 - The table to update within.
+	 * @param column	 - The column that needs to have an updated value inserted.
+	 * @param input		 - The value to put into the specified column.
+	 * @param where		 - The where clause constraint column.
+	 * @param whereInput - The where clause's specifier.
+	 */
+	public void basicUpdate(String table, String column, String input, String where, String whereInput)
+	{
+		String statement = "UPDATE " + db + table + " SET " + column + " = " + input + " WHERE " + where + " = '" + whereInput + "';";
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/**
+	 * Basic update method.
+	 *
+	 * @param table		 - The table to update within.
+	 * @param column	 - The column that needs to have an updated value inserted.
+	 * @param input		 - The value to put into the specified column.
+	 * @param where		 - The where clause constraint column.
+	 * @param whereInput - The where clause's specifier.
+	 */
+	public void basicUpdate(String table, String column, Object input, String where, Object whereInput)
+	{
+		String statement = "UPDATE " + db + table + " SET " + column + " = " + input + " WHERE " + where + " = '" + whereInput + "';";
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/**
+	 * Method to insert data into a row or column as specified by the passed statement for the first time
+	 *
+	 * @param statement - The statement handling the first-insertion
+	 */
+	public void firstInsertion(String statement)
+	{
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
+
+	/**
+	 * Check database for any entries in the voiceTracker table.
+	 */
+	public ArrayList<Triplet<Long, Long, Long>> bootVoiceVerify()
+	{
+		String statement = "SELECT * FROM " + db + "voiceTracker";
+		ArrayList<Triplet<Long, Long, Long>> array = new ArrayList<>();
+		try
+		{
+			ResultSet rs = performQuery(statement);
+			//ResultSet rs = prepare(statement).executeQuery();
+
+			while (rs.next())
+			{
+				array.add(Triplet.with(rs.getLong(1), rs.getLong(2), rs.getLong(3)));
+				break;
+			}
+
+			return array;
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Error getting data from voiceTracker using", statement, e);
 		}
 
 		return null;
@@ -1407,8 +974,7 @@ public class TigerGuardDB {
 	public void submitEmbed(long guild, String embedName, String type, String color, String title, String body)
 	{
 		String statement = String.format("INSERT INTO " + db + guild + "embeds (`name`, `type`, title, color, body) VALUES ('%s','%s','%s','%s','%s');", embedName, type, title, color, body);
-
-		performUpdate(statement, LogType.DATABASE_ERROR, "Failure setting embed data for guild " + guild);
+		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
 
@@ -1416,12 +982,12 @@ public class TigerGuardDB {
 	public void basicDelete(String table, String column, Object input)
 	{
 		String statement = "DELETE FROM " + db + table + " WHERE " + column + " = " + input + ";";
-		performUpdate(statement, LogType.DATABASE_ERROR, "Failure deleting entry from database");
+		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
 	public Integer selectColorRolesCount(Long guild)
 	{
-		String statement = "SELECT color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18 FROM " + db + "colorRoles WHERE id = " + guild;
+		String statement = "SELECT color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18 FROM " + db + "colorRoles WHERE guild = " + guild;
 		ResultSet rs = performQuery(statement);
 
 		try
@@ -1453,7 +1019,7 @@ public class TigerGuardDB {
 
 	public ArrayList<Long> selectColorRoles(Long guild)
 	{
-		String statement = "SELECT color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18 FROM " + db + "colorRoles WHERE id = " + guild;
+		String statement = "SELECT color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18 FROM " + db + "colorRoles WHERE guild = " + guild;
 		ResultSet rs = performQuery(statement);
 
 		try
@@ -1486,15 +1052,15 @@ public class TigerGuardDB {
 
 	public void newGuildEntry(Long guild)
 	{
-		performUpdate("INSERT INTO " + db + "guildInfo (id) VALUES (" + guild + ");", LogType.DATABASE_ERROR, "Failure setting guild " + guild + " into DB.");
+		performUpdate("INSERT INTO " + db + "guildInfo (guild) VALUES (" + guild + ");", LogType.DATABASE_ERROR);
 	}
 
 	public void createGuildColorRolesEntry(Long guild)
 	{
-		String statement = "INSERT INTO " + db + "colorRoles (id, embed, color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18)"
+		String statement = "INSERT INTO " + db + "colorRoles (guild, embed, color1, color2, color3, color4, color5, color6, color7, color8, color9, color10, color11, color12, color13, color14, color15, color16, color17, color18)"
 				+ "VALUES (" + guild + ", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);";
 
-		performUpdate(statement, LogType.DATABASE_ERROR, "Error inserting default color null entries for guild " + guild + "\n SQL Statement: " + statement);
+		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
 	/*
@@ -1569,11 +1135,11 @@ public class TigerGuardDB {
 	public void createGuildXpTable(Guild guild)
 	{
 		String guildMeshXp = guild.getIdLong() + "xp";
-		String statement = "CREATE TABLE " + db + guildMeshXp + "(id varchar(45), level int(11), xp int(11), activeRole varchar(45);";
+		String statement = "CREATE TABLE " + db + guildMeshXp + "(member varchar(45), level int(11), xp int(11), activeRole varchar(45);";
 
 		try
 		{
-			performUpdate(statement, LogType.XP_DATABASE_ERROR, "Error creating guild xp table using");
+			performUpdate(statement, LogType.XP_DATABASE_ERROR);
 
 			guild.loadMembers().onSuccess(members -> {
 				List<Member> memberList = members.stream().filter(a -> !a.getUser().isBot()).toList();
@@ -1582,7 +1148,7 @@ public class TigerGuardDB {
 
 				for (Member member : memberList)
 				{
-					String innerStatement = "INSERT INTO " + db + guildMeshXp + " (id, level, xp, activeRole) VALUES (" + member.getIdLong() + "0, 0, null);";
+					String innerStatement = "INSERT INTO " + db + guildMeshXp + " (member, level, xp, activeRole) VALUES (" + member.getIdLong() + "0, 0, null);";
 
 					try
 					{
@@ -1608,7 +1174,7 @@ public class TigerGuardDB {
 	 */
 	public void insertUserIntoGuildXPTable(String table, long user)
 	{
-		performUpdate("INSERT INTO " + db + table + " (id, level, xp, activeRole) VALUES (" + user + ", 0, 0, null);", LogType.XP_DATABASE_ERROR, "Unable to insert user " + user + " into the table " + table);
+		performUpdate("INSERT INTO " + db + table + " (member, level, xp, activeRole) VALUES (" + user + ", 0, 0, null);", LogType.XP_DATABASE_ERROR);
 	}
 
 	/*
@@ -1616,12 +1182,12 @@ public class TigerGuardDB {
 	 */
 	public void insertGuildIntoLevelRoleTable(Long guild)
 	{
-		performUpdate("INSERT INTO " + db + "levelRoles SET id = " + guild + ";", LogType.DATABASE_ERROR, "Error inserting new entry into levelRoles table for guild " + guild);
+		performUpdate("INSERT INTO " + db + "levelRoles SET guild = " + guild + ";", LogType.DATABASE_ERROR);
 	}
 
 	public void firstInsertionGuildKnownLevelRoleValue(Long guild, int initialInput)
 	{
-		performUpdate("UPDATE " + db + "lvlroles SET knownLevelRoles = " + initialInput + " WHERE id = " + guild + ");", LogType.DATABASE_ERROR, "Error inserting knownLevelRoles value for guild " + guild);
+		performUpdate("UPDATE " + db + "lvlroles SET knownLevelRoles = " + initialInput + " WHERE guild = " + guild + ");", LogType.DATABASE_ERROR);
 	}
 
 	public void generateGuildRankCard(SlashCommandInteractionEvent event)
@@ -1641,7 +1207,7 @@ public class TigerGuardDB {
 
 		try
 		{
-			ResultSet rs = performQuery("SELECT level, xp FROM " + db + table + " WHERE id = " + member.getIdLong() + ";");
+			ResultSet rs = performQuery("SELECT level, xp FROM " + db + table + " WHERE member = " + member.getIdLong() + ";");
 
 			while (rs.next())
 			{
@@ -1654,10 +1220,7 @@ public class TigerGuardDB {
 			logger.logErr(LogType.DATABASE_ERROR, "Unable to get the xp value and level for user " + member.getIdLong() + " in guild " + guild.getIdLong(), null, e);
 		}
 
-		if (TigerGuard.isDebugMode())
-		{
-			logger.log(LogType.DEBUG, "member's level and xp are: " + memberLevel + " | " + memberXP);
-		}
+		if (TigerGuard.isDebugMode()) logger.log(LogType.DEBUG, "member's level and xp are: " + memberLevel + " | " + memberXP);
 
 		Long levelRole = null;
 		if (memberLevel != 0)
@@ -1724,15 +1287,15 @@ public class TigerGuardDB {
 
 	public void voiceStatusBegin(long member, long guild)
 	{
-		if (!checkRow("voiceTracker", "id", member))
+		if (!checkRow("voiceTracker", "member", member))
 		{
-			performUpdate(String.format("INSERT INTO %svoiceTracker (id, init, guild) VALUES (%s, %d, %d);", db, member, System.currentTimeMillis(), guild), LogType.DATABASE_ERROR, "Unable to set member " + member + " into timeTracker");
+			performUpdate(String.format("INSERT INTO %svoiceTracker (member, init, guild) VALUES (%s, %d, %d);", db, member, System.currentTimeMillis(), guild), LogType.DATABASE_ERROR);
 		}
 	}
 
 	public long voiceStatusEnd(long member)
 	{
-		String queryS = "SELECT init FROM " + db + "voiceTracker WHERE id = " + member + ";";
+		String queryS = "SELECT init FROM " + db + "voiceTracker WHERE member = " + member + ";";
 		ResultSet rs = performQuery(queryS);
 		long query = 0;
 
@@ -1748,10 +1311,10 @@ public class TigerGuardDB {
 			logger.logErr(LogType.DATABASE_ERROR, "Failure getting data for " + member + " from voicetracker table", queryS, e);
 		}
 
-		String statement = "DELETE FROM " + db + "voiceTracker WHERE id = " + member + ";";
+		String statement = "DELETE FROM " + db + "voiceTracker WHERE member = " + member + ";";
 		try
 		{
-			performUpdate(statement, LogType.DATABASE_ERROR, "Failure deleting entry for " + member + " from time tracker table.");
+			performUpdate(statement, LogType.DATABASE_ERROR);
 		}
 		catch (Exception e)
 		{
@@ -1767,20 +1330,20 @@ public class TigerGuardDB {
 	 */
 	public void checkIfUserExistsInGlobalData(long member)
 	{
-		if (!checkRow("globalUserData", "id", member))
+		if (!checkRow("globalUserData", "member", member))
 		{
-			performUpdate("INSERT INTO " + db + "globalUserData (id, level, xp, bgimage) VALUES (" + member + ", 0, 0, 1);", LogType.DATABASE_ERROR, "Unable to set member " + member + " into globalUserData");
+			performUpdate("INSERT INTO " + db + "globalUserData (member, level, xp, bgimage) VALUES (" + member + ", 0, 0, 1);", LogType.DATABASE_ERROR);
 		}
 	}
 
 	public void updateUserRankImage(long member, int value)
 	{
-		performUpdate("UPDATE " + db + "globalUserData SET bgimage = " + value + " WHERE id = " + member + ";", LogType.DATABASE_ERROR, "Unable to set bgimage for member " + member + " in globalUserData for the input of " + value);
+		performUpdate("UPDATE " + db + "globalUserData SET bgimage = " + value + " WHERE member = " + member + ";", LogType.DATABASE_ERROR);
 	}
 
 	public Integer getUserRankImage(long member)
 	{
-		String statement = "SELECT bgimage FROM " + db + "globalUserData WHERE id = " + member + ";";
+		String statement = "SELECT bgimage FROM " + db + "globalUserData WHERE member = " + member + ";";
 		ResultSet rs = performQuery(statement);
 		int query = 0;
 
@@ -1822,7 +1385,7 @@ public class TigerGuardDB {
 
 		if (getGuildKnownLevelUpRoleCount(guild.getIdLong()) != 0)
 		{
-			String initialQuery = String.format("SELECT level, xp FROM %s%s WHERE id = %s", db, guildMesh, member.getIdLong());
+			String initialQuery = String.format("SELECT level, xp FROM %s%s WHERE member = %s", db, guildMesh, member.getIdLong());
 			ResultSet rs = performQuery(initialQuery);
 
 			try
@@ -1876,8 +1439,8 @@ public class TigerGuardDB {
 				//maxRankLevel-1 is being used because our scale starts at 0 and goes up to max 39 (max, this equals 40). the minus 1 gives up the last xp level up req. for the highest level in the rankLevels array. Then we give 40 artifically.
 				if ((memberLevel == (maxRankLevel-1)) && ((memberXP + xpGain) >= rankLevels[maxRankLevel-1]))
 				{
-					String statement = "UPDATE " + db + guildMesh + " SET xp = " + rankLevels[maxRankLevel-1] + ", level = " + maxRankLevel + " WHERE id = " + member.getIdLong() + ";";
-					performUpdate(statement, LogType.DATABASE_ERROR, "Failure updating xp data");
+					String statement = "UPDATE " + db + guildMesh + " SET xp = " + rankLevels[maxRankLevel-1] + ", level = " + maxRankLevel + " WHERE member = " + member.getIdLong() + ";";
+					performUpdate(statement, LogType.DATABASE_ERROR);
 
 					try
 					{
@@ -1888,7 +1451,7 @@ public class TigerGuardDB {
 						logger.logErr(LogType.ERROR, "Failure generating rank card from updateRankXp method.", statement, e);
 					}
 
-					if (hasValue("guildInfo", "botChannel", "id", guild.getIdLong()))
+					if (checkIfValueExists("guildInfo", "botChannel", "guild", guild.getIdLong()))
 					{
 						guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong())).sendMessage(msgBuilder.build()).queue();
 					}
@@ -1928,16 +1491,16 @@ public class TigerGuardDB {
 					//if ((userXP + xpGain) < ((rankLevels[userLevel]-rankLevels[userLevel-1])))
 					if ((memberXP + xpGain) < (rankLevels[memberLevel]) && increasedAmount == 0)
 					{
-						String statement = "UPDATE " + db + guildMesh + " SET xp = " + (memberXP+xpGain) + " WHERE id = " + member.getIdLong() + ";";
-						performUpdate(statement, LogType.DATABASE_ERROR, "Failure updating xp data using prompt");
+						String statement = "UPDATE " + db + guildMesh + " SET xp = " + (memberXP+xpGain) + " WHERE member = " + member.getIdLong() + ";";
+						performUpdate(statement, LogType.DATABASE_ERROR);
 					}
 
 					//Else, user's xp plus the gained xp is equal to or greater than the level up requirement, update the xpValue and xpLevel.
 					else
 					{
 						//memberLevel+1
-						String statement = "UPDATE " + db + guildMesh + " SET xp = " + (memberXP+xpGain) + ", level = " + memberLevel + " WHERE id = " + member.getIdLong() + ";";
-						performUpdate(statement, LogType.DATABASE_ERROR, "Failure updating xp data using prompt");
+						String statement = "UPDATE " + db + guildMesh + " SET xp = " + (memberXP+xpGain) + ", level = " + memberLevel + " WHERE member = " + member.getIdLong() + ";";
+						performUpdate(statement, LogType.DATABASE_ERROR);
 
 						try
 						{
@@ -2010,7 +1573,7 @@ public class TigerGuardDB {
 		int level = getGuildMemberLevel(guild.getIdLong(), member.getIdLong());
 
 		//If user does NOT have a preferred role selected - ie never set one
-		if (hasValue(guild.getIdLong() + "xp", "activeRole", "id", member.getIdLong()))
+		if (checkIfValueExists(guild.getIdLong() + "xp", "activeRole", "member", member.getIdLong()))
 		{
 			logger.log(LogType.DEBUG, "Member " + member.getEffectiveName() + " is level " + level);
 
@@ -2038,7 +1601,7 @@ public class TigerGuardDB {
 	public ArrayList<Long> getGuildLevelRoleIDs(Long guild)
 	{
 		ArrayList<Long> results = new ArrayList<>();
-		String statement = "SELECT * FROM " + db + "lvlroles WHERE id = " + guild + ";";
+		String statement = "SELECT * FROM " + db + "lvlroles WHERE guild = " + guild + ";";
 
 		try
 		{
@@ -2072,8 +1635,8 @@ public class TigerGuardDB {
 	public int getGuildMemberLevel(long guild, long member)
 	{
 		int result = 0;
-
-		String statement = String.format("SELECT level FROM " + db + "%s WHERE id = %d", guild + "xp", member);
+		String statement = String.format("SELECT level FROM " + db + "%s WHERE guild = %d", guild + "xp", member);
+		
 		try
 		{
 			ResultSet rs = performQuery(statement);
@@ -2099,24 +1662,24 @@ public class TigerGuardDB {
 
 	public void createGuildPollTable(long guild)
 	{
-		performUpdate("CREATE TABLE " + db + guild + "polls (id VARCHAR(45), channeltype VARCHAR(45), channel VARCHAR(45), polltype VARCHAR(20), endtime VARCHAR(45), initiated VARCHAR(10));", LogType.DATABASE_ERROR, "Failure creating poll table for guild " + guild);
-		performUpdate("UPDATE " + db + "guildInfo SET pollTable = '" + guild + "polls' WHERE id = " + guild, LogType.DATABASE_ERROR, "Failuring updating poll table for guild " + guild + " after table creation");
+		performUpdate("CREATE TABLE " + db + guild + "polls (message VARCHAR(45), channeltype VARCHAR(45), channel VARCHAR(45), polltype VARCHAR(20), endtime VARCHAR(45), initiated VARCHAR(10));", LogType.DATABASE_ERROR);
+		performUpdate("UPDATE " + db + "guildInfo SET pollTable = '" + guild + "polls' WHERE guild = " + guild, LogType.DATABASE_ERROR);
 	}
 
 	public void addGuildToTempPollTable(long guild)
 	{
-		performUpdate("INSERT INTO " + db + "tempPollData (id) VALUES (" + guild + ")", LogType.DATABASE_ERROR, "Failure inserting guild " + guild + " into tempPollData.");
+		performUpdate("INSERT INTO " + db + "tempPollData (guild) VALUES (" + guild + ")", LogType.DATABASE_ERROR);
 	}
 
 	public void setPollTempTimeData(long guild, int value, String type)
 	{
-		String statement = String.format("UPDATE " + db + "tempPollData SET timetype = '%s', amount = '%d' WHERE id = %d", type, value, guild);
-		performUpdate(statement, LogType.DATABASE_ERROR, "Failure setting temp poll data");
+		String statement = String.format("UPDATE " + db + "tempPollData SET timetype = '%s', amount = '%d' WHERE guild = %d", type, value, guild);
+		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
 	public Pair<String, Integer> getPollTempData(long guild)
 	{
-		String statement = "SELECT timetype, amount FROM " + db + "tempPollData WHERE id = " + guild + ";";
+		String statement = "SELECT timetype, amount FROM " + db + "tempPollData WHERE guild = " + guild + ";";
 		ResultSet rs = performQuery(statement);
 
 		try
@@ -2137,25 +1700,22 @@ public class TigerGuardDB {
 	/*
 	 * TODO: this method might be able to be simplified/compacted
 	 */
-	public void pollCreation(long guild, long pollId, ChannelType channelType, long channel, String pollType)
+	public void pollCreation(long guild, long poll, ChannelType channelType, long channel, String pollType)
 	{
-		if (!checkForTable(guild + "polls"))
-		{
-			this.createGuildPollTable(guild);
-		}
+		if (!checkForTable(guild + "polls")) createGuildPollTable(guild);
 
 		Pair<String, Integer> data = getPollTempData(guild);
 		String timeType = data.getValue0();
-		String statementCreate = "CREATE TABLE " + db + "poll" + pollId + "(voter VARCHAR(45), vote VARCHAR(1));";
+		String statementCreate = "CREATE TABLE " + db + "poll" + poll + "(voter VARCHAR(45), vote VARCHAR(1));";
 
 		if (timeType.equals("minute") && data.getValue1() <= 10) //If Poll might end and be missed between the poll-check loop
 		{
-			String statementB = "INSERT INTO " + db + guild + "polls (id, channeltype, channel, polltype, endtime, initiated) VALUES ('" + pollId + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + (System.currentTimeMillis() + (data.getValue1() * 60000)) + "', true);";
+			String statementB = "INSERT INTO " + db + guild + "polls (poll, channeltype, channel, polltype, endtime, initiated) VALUES ('" + poll + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + (System.currentTimeMillis() + (data.getValue1() * 60000)) + "', true);";
 
-			performUpdate(statementCreate, LogType.DATABASE_ERROR, "Failure creating guild poll table");
-			performUpdate(statementB, LogType.DATABASE_ERROR, "Failure inserting into guild poll table");
+			performUpdate(statementCreate, LogType.DATABASE_ERROR);
+			performUpdate(statementB, LogType.DATABASE_ERROR);
 
-			new TigerPolls().designatedQuickStart(guild, pollId, channelType, channel, pollType, (System.currentTimeMillis() + (data.getValue1() * 60000)));
+			new TigerPolls().designatedQuickStart(guild, poll, channelType, channel, pollType, (System.currentTimeMillis() + (data.getValue1() * 60000)));
 		}
 		else //All other polls (those that won't miss the next poll-check loop prior to expiring)
 		{
@@ -2175,45 +1735,45 @@ public class TigerGuardDB {
 					break;
 			}
 
-			String statementB = "INSERT INTO " + db + guild + "polls` (id, channeltype, channel, polltype, endtime, initiated) VALUES ('" + pollId + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + endTime + "', false);";
+			String statementB = "INSERT INTO " + db + guild + "polls` (poll, channeltype, channel, polltype, endtime, initiated) VALUES ('" + poll + "', '" + channelType.toString().toLowerCase() + "', '" + channel + "', '" + pollType + "', '" + endTime + "', false);";
 
-			performUpdate(statementCreate, LogType.DATABASE_ERROR, "Failure creating guild poll table");
-			performUpdate(statementB, LogType.DATABASE_ERROR, "Failure inserting into guild poll table");
+			performUpdate(statementCreate, LogType.DATABASE_ERROR);
+			performUpdate(statementB, LogType.DATABASE_ERROR);
 		}
 	}
 
 	public void pollUpdateInitiatedCheck(long guild, long poll)
 	{
-		String statement = "UPDATE " + db + guild + "polls SET initiated = true WHERE id = " + poll + ";";
-		performUpdate(statement, LogType.DATABASE_ERROR, "Failure updating poll table to show the poll is being checked");
+		String statement = "UPDATE " + db + guild + "polls SET initiated = true WHERE poll = " + poll + ";";
+		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
-	public void pollVoteUpdate(long pollId, long member, char vote)
+	public void pollVoteUpdate(long poll, long member, char vote)
 	{
-		String statement = "SELECT 1 FROM " + db + "poll" + pollId + " WHERE voter = " + member + " LIMIT 1;";
+		String statement = "SELECT 1 FROM " + db + "poll" + poll + " WHERE voter = " + member + " LIMIT 1;";
 		ResultSet rs = performQuery(statement);
 
 		try
 		{
 			if (!rs.first())
 			{
-				performUpdate(String.format("INSERT INTO %s (voter, vote) VALUES (%s, '%c');", db + "poll" + pollId, member, vote), LogType.DATABASE_ERROR, "Failure inserting member vote status in poll:\n[Poll] " + pollId + " | [Member]" + member + " | [vote] " + vote);
+				performUpdate(String.format("INSERT INTO %s (voter, vote) VALUES (%s, '%c');", db + "poll" + poll, member, vote), LogType.DATABASE_ERROR);
 			}
 			else
 			{
-				performUpdate(String.format("UPDATE %s SET vote = '%c' WHERE voter = %s", db + "poll" + pollId, vote, member), LogType.DATABASE_ERROR, "Failure updating member vote status in poll:\n[Poll] " + pollId + " | [Member]" + member + " | [vote] " + vote);
+				performUpdate(String.format("UPDATE %s SET vote = '%c' WHERE voter = %s;", db + "poll" + poll, vote, member), LogType.DATABASE_ERROR);
 			}
 		}
 		catch (Exception e)
 		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure returning poll vote status for [Poll] " + pollId + " | [Member]" + member + " | [vote] " + vote, statement, e);
+			logger.logErr(LogType.DATABASE_ERROR, "Failure returning poll vote status for [Poll] " + poll + " | [Member]" + member + " | [vote] " + vote, statement, e);
 		}
 	}
 
 	public ArrayList<Pair<Long, String>> getPollTablesBasicData()
 	{
 		ArrayList<Pair<Long, String>> polls = new ArrayList<>();
-		String statement = "SELECT id, pollTable FROM " + db + "guildInfo";
+		String statement = "SELECT guild, pollTable FROM " + db + "guildInfo";
 		ResultSet rs = performQuery(statement);
 
 		try
@@ -2237,7 +1797,7 @@ public class TigerGuardDB {
 	public ArrayList<Quintet<Long, ChannelType, Long, String, Long>> getPollsData(String pollTable, boolean bootRun)
 	{
 		ArrayList<Quintet<Long, ChannelType, Long, String, Long>> dataList = new ArrayList<>();
-		String statement = "SELECT id, channeltype, channel, polltype, endtime, initiated FROM " + db + pollTable + ";";
+		String statement = "SELECT poll, channeltype, channel, polltype, endtime, initiated FROM " + db + pollTable + ";";
 		ResultSet rs = performQuery(statement);
 
 		try
@@ -2278,72 +1838,57 @@ public class TigerGuardDB {
 		return dataList;
 	}
 
-	public Pair<Integer, Integer> pollCollectResultsDuo(long guild, long pollId)
+	public Pair<Integer, Integer> pollCollectResultsDuo(long guild, long poll)
 	{
 		int yay = 0;
 		int nay = 0;
 
-		String statement = "SELECT vote FROM " + db + "poll" + pollId + ";";
-		ResultSet rs = performQuery("SELECT vote FROM " + db + "poll" + pollId + ";");
+		String statement = "SELECT vote FROM " + db + "poll" + poll + ";";
+		ResultSet rs = performQuery("SELECT vote FROM " + db + "poll" + poll + ";");
 
 		try
 		{
 			while (rs.next())
 			{
-				if (rs.getString(1).equals("y"))
-				{
-					yay++;
-				}
-				else
-				{
-					nay++;
-				}
+				if (rs.getString(1).equalsIgnoreCase("y")) yay++;
+				else nay++;
 			}
 
-			pollDeletion(guild, pollId);
+			pollDeletion(guild, poll);
 
 		}
 		catch (Exception e)
 		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure finalizing results for the poll "  + pollId, statement, e);
+			logger.logErr(LogType.DATABASE_ERROR, "Failure finalizing results for the poll "  + poll, statement, e);
 		}
 
 		return Pair.with(yay, nay);
 	}
 
-	public Triplet<Integer, Integer, Integer> pollCollectResultsTrio(long guild, long pollId)
+	public Triplet<Integer, Integer, Integer> pollCollectResultsTrio(long guild, long poll)
 	{
 		int yay = 0;
 		int abs = 0;
 		int nay = 0;
 
-		String statement = "SELECT vote FROM " + db + "poll" + pollId + ";";
+		String statement = "SELECT vote FROM " + db + "poll" + poll + ";";
 		ResultSet rs = performQuery(statement);
 
 		try
 		{
 			while (rs.next())
 			{
-				if (rs.getString(1).equals("y"))
-				{
-					yay++;
-				}
-				else if (rs.getString(1).equals("a"))
-				{
-					abs++;
-				}
-				else
-				{
-					nay++;
-				}
+				if (rs.getString(1).equalsIgnoreCase("y")) yay++;
+				else if (rs.getString(1).equalsIgnoreCase("a")) abs++;
+				else nay++;
 			}
 
-			pollDeletion(guild, pollId);
+			pollDeletion(guild, poll);
 
 		}
 		catch (Exception e)
 		{
-			logger.logErr(LogType.DATABASE_ERROR, "Failure finalizing results for the poll "  + pollId, statement, e);
+			logger.logErr(LogType.DATABASE_ERROR, "Failure finalizing results for the poll "  + poll, statement, e);
 		}
 
 		return Triplet.with(yay, abs, nay);
@@ -2351,10 +1896,7 @@ public class TigerGuardDB {
 
 	private void pollDeletion(long guild, long poll)
 	{
-		String statementDelete = String.format("DELETE FROM %s WHERE id = %s", db + guild + "polls", poll);
-		String statementDrop = String.format("DROP TABLE %s;", db + "poll" + poll);
-
-		performUpdate(statementDelete, LogType.DATABASE_ERROR, "Failure deleting poll from database");
-		performUpdate(statementDrop, LogType.DATABASE_ERROR, "Failuring dropping table from database");
+		performUpdate(String.format("DELETE FROM %s WHERE poll = %s", db + guild + "polls", poll), LogType.DATABASE_ERROR);
+		performUpdate(String.format("DROP TABLE %s;", db + "poll" + poll), LogType.DATABASE_ERROR);
 	}
 }

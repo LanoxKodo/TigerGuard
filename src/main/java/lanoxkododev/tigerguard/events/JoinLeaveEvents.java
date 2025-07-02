@@ -69,8 +69,6 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		}
 		else
 		{
-			tigerguardDB.selectSingle("guildInfo", null, null, null, "long");
-
 			long memberRole = tigerguardDB.getGuildMemberRole(guild.getIdLong());
 			if (memberRole != 0)
 			{

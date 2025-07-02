@@ -72,11 +72,9 @@ public class LevelRoleDeleteThreader extends Thread {
 					e.printStackTrace();
 				}
 
-				String deleteStatement = "ALTER TABLE tigerguarddb." + guild.getIdLong() + "lvlroles DROP COLUMN lvlRole" + a + ";";
-
 				try
 				{
-					tigerguardDB.deleteColumn(guild.getIdLong(), deleteStatement);
+					tigerguardDB.deleteColumn("ALTER TABLE tigerguarddb." + guild.getIdLong() + "lvlroles DROP COLUMN lvlRole" + a + ";");
 				}
 				catch (Exception e)
 				{
