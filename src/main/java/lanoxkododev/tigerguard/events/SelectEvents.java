@@ -320,7 +320,7 @@ public class SelectEvents extends ListenerAdapter {
 						int rolesCount = event.getGuild().getRoles().size()-1;
 
 
-						if (tigerGuardDB.checkRow("colorRoles", "id", event.getGuild().getIdLong()))
+						if (tigerGuardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 						{
 							if (250-rolesCount-(18-tigerGuardDB.selectColorRolesCount(event.getGuild().getIdLong())) > 0)
 							{
@@ -454,64 +454,64 @@ public class SelectEvents extends ListenerAdapter {
 		switch (entitySelection)
 		{
 			case "e1-role-admin":
-				tigerGuardDB.basicUpdate("guildInfo", "adminRole", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "adminRole", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Admin role specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the admin role.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-role-primary-staff":
-				tigerGuardDB.basicUpdate("guildInfo", "primaryStaffRole", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "primaryStaffRole", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Primary staff role specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the primary staff role.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-role-secondary-staff":
-				tigerGuardDB.basicUpdate("guildInfo", "secondaryStaffRole", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "secondaryStaffRole", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Primary staff role specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the primary staff role.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-role-member":
-				tigerGuardDB.basicUpdate("guildInfo", "memberRole", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "memberRole", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Member role specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the regular member role.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-role-nsfw":
-				tigerGuardDB.basicUpdate("guildInfo", "nsfwRole", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "nsfwRole", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("NSFW role specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the nsfw role.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-announcement-channel": //TODO DELETE
-				tigerGuardDB.basicUpdate("guildInfo", "announcementChannel", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "announcementChannel", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Announcement channel specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the channel for announcement purposes.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-bot-testing-channel": //TODO DELETE
-				tigerGuardDB.basicUpdate("guildInfo", "botSpamChannel", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "botSpamChannel", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Bot/Testing channel specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the channel for bot spam and/or testing purposes.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-music-channel":
-				tigerGuardDB.basicUpdate("guildInfo", "musicChannel", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "musicChannel", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Music channel specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the music channel.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-level-channel":
-				tigerGuardDB.basicUpdate("guildInfo", "levelChannel", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "levelChannel", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Level channel specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the level channel.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-bot-channel":
-				tigerGuardDB.basicUpdate("guildInfo", "botSpamChannel", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "botSpamChannel", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Bot channel specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the channel for misc bot messages.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
 			case "e1-customvc-channel":
-				tigerGuardDB.basicUpdate("guildInfo", "dynamicVcChannel", selection, "id", guild);
-				tigerGuardDB.basicUpdate("guildInfo", "dynamicVcCategory", event.getGuild().getVoiceChannelById(selection).getParentCategoryIdLong(), "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "dynamicVcChannel", selection, "guild", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "dynamicVcCategory", event.getGuild().getVoiceChannelById(selection).getParentCategoryIdLong(), "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("CustomVC join-to-create vc specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the 'Join-To-Create' channel for creating custom VC's.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!\n\n"
 					+ "***NOTE*** Ensure the custom VC channel is in a category with no other voice channels. I will delete any voice channels besides the voice channel you set whenever they go empty!" + delM6)).queue(a -> a.deleteOriginal().queueAfter(60, TimeUnit.SECONDS));
 				break;
 			case "e1-size-channel":
-				tigerGuardDB.basicUpdate("guildInfo", "guildSizeChannel", selection, "id", guild);
+				tigerGuardDB.basicUpdate("guildInfo", "guildSizeChannel", selection, "guild", guild);
 				event.replyEmbeds(embedder.simpleEmbed("Member counter specification confirmed!", null, null, ColorCodes.FINISHED, "You selected" + event.getValues().get(0) + " for what this server recognizes as the channel for tracking the member count of the server.\n"
 					+ "I will now recognize this as well; you can change this again at anytime using this command once more!" + delM)).queue(a -> a.deleteOriginal().queueAfter(30, TimeUnit.SECONDS));
 				break;
@@ -520,7 +520,7 @@ public class SelectEvents extends ListenerAdapter {
 
 	private void serverMessageItemsSection(StringSelectInteractionEvent event, InteractionHook hook)
 	{
-		if (tigerGuardDB.checkRow("colorRoles", "id", event.getGuild().getIdLong()))
+		if (tigerGuardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 		{
 			hook.editOriginalEmbeds(embedder.simpleEmbed("Select which operation you'd like to utilize", null, null, ColorCodes.TIGER_FUR, null))
 				.setActionRow(StringSelectMenu.create("s3-em-items-with-color")

@@ -37,7 +37,7 @@ public class ColorRoleAdderThreader extends Thread {
 
 	private void createColorRoles()
 	{
-		if (!tigerguardDB.checkRow("colorRoles", "id", event.getGuild().getIdLong()))
+		if (!tigerguardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 		{
 			tigerguardDB.createGuildColorRolesEntry(event.getGuild().getIdLong());
 		}

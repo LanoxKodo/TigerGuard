@@ -31,7 +31,7 @@ public class MessageEvents extends ListenerAdapter {
 				if (event.getChannel().getIdLong() != tigerGuardDB.getGuildBotSpamChannel(event.getGuild().getIdLong()) && event.getChannel().getIdLong() != tigerGuardDB.getGuildRuleChannel(event.getGuild().getIdLong())
 					&& event.getChannel().getIdLong() != tigerGuardDB.getGuildSizeChannel(event.getGuild().getIdLong()))
 				{
-					if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "id", member.getIdLong()))
+					if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "member", member.getIdLong()))
 					{
 						tigerGuardDB.insertUserIntoGuildXPTable(event.getGuild().getIdLong() + "xp", member.getIdLong());
 					}

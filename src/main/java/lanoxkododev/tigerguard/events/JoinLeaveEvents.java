@@ -128,7 +128,7 @@ public class JoinLeaveEvents extends ListenerAdapter {
 	{
 		logger.log(LogType.INFO, "Server added bot! Sever " + event.getGuild().getId() + ", " + event.getGuild().getName());
 
-		if (!tigerguardDB.checkRow("guildInfo", "id", event.getGuild().getIdLong()))
+		if (!tigerguardDB.checkRow("guildInfo", "guild", event.getGuild().getIdLong()))
 		{
 			tigerguardDB.newGuildEntry(event.getGuild().getIdLong());
 		}

@@ -195,7 +195,7 @@ public class TimeDates {
 		JDA jda = TigerGuard.getTigerGuard().getJDA();
 		ThreadUtilities.createGenericThread(_ -> {
 			jda.getGuilds().forEach(b -> {
-				if (TigerGuardDB.getTigerGuardDB().checkRow("levelRoles", "id", b.getIdLong()))
+				if (TigerGuardDB.getTigerGuardDB().checkRow("levelRoles", "guild", b.getIdLong()))
 				{
 					Long channel = TigerGuardDB.getTigerGuardDB().getGuildLevelChannel(b.getIdLong());
 

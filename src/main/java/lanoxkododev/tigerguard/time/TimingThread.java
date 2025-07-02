@@ -165,7 +165,7 @@ public class TimingThread extends Thread {
 
 						if (calc >= 1)
 						{
-							if (!tigerguardDB.checkRow(guild + "xp", "id", member))
+							if (!tigerguardDB.checkRow(guild + "xp", "member", member))
 							{
 								tigerguardDB.insertUserIntoGuildXPTable(guild + "xp", member);
 							}
@@ -180,7 +180,7 @@ public class TimingThread extends Thread {
 							}
 						}
 
-						tigerguardDB.basicDelete("voiceTracker", "id", member);
+						tigerguardDB.basicDelete("voiceTracker", "member", member);
 					}
 				}
 			});

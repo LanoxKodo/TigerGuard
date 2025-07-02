@@ -62,7 +62,7 @@ public class ChannelEvents extends ListenerAdapter {
 					}
 					else
 					{
-						if (tigerGuardDB.checkRow("levelRoles", "id", guild.getIdLong()))
+						if (tigerGuardDB.checkRow("levelRoles", "guild", guild.getIdLong()))
 						{
 							tigerGuardDB.voiceStatusBegin(event.getMember().getIdLong(), guild.getIdLong());
 						}
@@ -123,7 +123,7 @@ public class ChannelEvents extends ListenerAdapter {
 
 			if (calc >= 1)
 			{
-				if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "id", member.getIdLong()))
+				if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "member", member.getIdLong()))
 				{
 					tigerGuardDB.insertUserIntoGuildXPTable(event.getGuild().getIdLong() + "xp", member.getIdLong());
 				}

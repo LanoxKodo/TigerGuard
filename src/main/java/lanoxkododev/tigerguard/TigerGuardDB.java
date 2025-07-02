@@ -971,7 +971,7 @@ public class TigerGuardDB {
 	 * @param title - The title-text of the embed.
 	 * @param body - The body-text of the embed.
 	 */
-	public void submitEmbed(long guild, String embedName, String type, String color, String title, String body)
+	public void submitEmbed(Long guild, String embedName, String type, String color, String title, String body)
 	{
 		String statement = String.format("INSERT INTO " + db + guild + "embeds (`name`, `type`, title, color, body) VALUES ('%s','%s','%s','%s','%s');", embedName, type, title, color, body);
 		performUpdate(statement, LogType.DATABASE_ERROR);
@@ -1172,7 +1172,7 @@ public class TigerGuardDB {
 	/*
 	 * Per-server insert user into server table, usually for after the table has already been created.
 	 */
-	public void insertUserIntoGuildXPTable(String table, long user)
+	public void insertUserIntoGuildXPTable(String table, Long user)
 	{
 		performUpdate("INSERT INTO " + db + table + " (member, level, xp, activeRole) VALUES (" + user + ", 0, 0, null);", LogType.XP_DATABASE_ERROR);
 	}
@@ -1266,7 +1266,7 @@ public class TigerGuardDB {
 		}
 	}
 
-	private Long getGuildLevelRoleFromGuild(long guild, long member, int memberLevel)
+	private Long getGuildLevelRoleFromGuild(Long guild, Long member, int memberLevel)
 	{
 		String query = "SELECT role" + memberLevel + " FROM " + db + "levelRoles";
 		try
@@ -1285,7 +1285,7 @@ public class TigerGuardDB {
 		return null;
 	}
 
-	public void voiceStatusBegin(long member, long guild)
+	public void voiceStatusBegin(Long member, Long guild)
 	{
 		if (!checkRow("voiceTracker", "member", member))
 		{
@@ -1293,11 +1293,11 @@ public class TigerGuardDB {
 		}
 	}
 
-	public long voiceStatusEnd(long member)
+	public Long voiceStatusEnd(Long member)
 	{
 		String queryS = "SELECT init FROM " + db + "voiceTracker WHERE member = " + member + ";";
 		ResultSet rs = performQuery(queryS);
-		long query = 0;
+		Long query = 0L;
 
 		try
 		{
@@ -1328,7 +1328,7 @@ public class TigerGuardDB {
 	 * Check if the specified user is found in the DB for the global data table.
 	 * @param user - The user to search for.
 	 */
-	public void checkIfUserExistsInGlobalData(long member)
+	public void checkIfUserExistsInGlobalData(Long member)
 	{
 		if (!checkRow("globalUserData", "member", member))
 		{
@@ -1336,12 +1336,12 @@ public class TigerGuardDB {
 		}
 	}
 
-	public void updateUserRankImage(long member, int value)
+	public void updateUserRankImage(Long member, int value)
 	{
 		performUpdate("UPDATE " + db + "globalUserData SET bgimage = " + value + " WHERE member = " + member + ";", LogType.DATABASE_ERROR);
 	}
 
-	public Integer getUserRankImage(long member)
+	public Integer getUserRankImage(Long member)
 	{
 		String statement = "SELECT bgimage FROM " + db + "globalUserData WHERE member = " + member + ";";
 		ResultSet rs = performQuery(statement);
@@ -1609,7 +1609,7 @@ public class TigerGuardDB {
 
 			while (rs.next())
 			{
-				long count = rs.getLong(2);
+				Long count = rs.getLong(2);
 
 				for (int a = 1; a <= count; a++)
 				{
@@ -1632,7 +1632,7 @@ public class TigerGuardDB {
 	 * @param member	- The ID of the member
 	 * @return
 	 */
-	public int getGuildMemberLevel(long guild, long member)
+	public int getGuildMemberLevel(Long guild, Long member)
 	{
 		int result = 0;
 		String statement = String.format("SELECT level FROM " + db + "%s WHERE guild = %d", guild + "xp", member);
@@ -1660,24 +1660,24 @@ public class TigerGuardDB {
 	 * ######################
 	 */
 
-	public void createGuildPollTable(long guild)
+	public void createGuildPollTable(Long guild)
 	{
 		performUpdate("CREATE TABLE " + db + guild + "polls (message VARCHAR(45), channeltype VARCHAR(45), channel VARCHAR(45), polltype VARCHAR(20), endtime VARCHAR(45), initiated VARCHAR(10));", LogType.DATABASE_ERROR);
 		performUpdate("UPDATE " + db + "guildInfo SET pollTable = '" + guild + "polls' WHERE guild = " + guild, LogType.DATABASE_ERROR);
 	}
 
-	public void addGuildToTempPollTable(long guild)
+	public void addGuildToTempPollTable(Long guild)
 	{
 		performUpdate("INSERT INTO " + db + "tempPollData (guild) VALUES (" + guild + ")", LogType.DATABASE_ERROR);
 	}
 
-	public void setPollTempTimeData(long guild, int value, String type)
+	public void setPollTempTimeData(Long guild, int value, String type)
 	{
 		String statement = String.format("UPDATE " + db + "tempPollData SET timetype = '%s', amount = '%d' WHERE guild = %d", type, value, guild);
 		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
-	public Pair<String, Integer> getPollTempData(long guild)
+	public Pair<String, Integer> getPollTempData(Long guild)
 	{
 		String statement = "SELECT timetype, amount FROM " + db + "tempPollData WHERE guild = " + guild + ";";
 		ResultSet rs = performQuery(statement);
@@ -1700,7 +1700,7 @@ public class TigerGuardDB {
 	/*
 	 * TODO: this method might be able to be simplified/compacted
 	 */
-	public void pollCreation(long guild, long poll, ChannelType channelType, long channel, String pollType)
+	public void pollCreation(Long guild, Long poll, ChannelType channelType, Long channel, String pollType)
 	{
 		if (!checkForTable(guild + "polls")) createGuildPollTable(guild);
 
@@ -1719,8 +1719,8 @@ public class TigerGuardDB {
 		}
 		else //All other polls (those that won't miss the next poll-check loop prior to expiring)
 		{
-			long currentTime = System.currentTimeMillis();
-			long endTime = 0;
+			Long currentTime = System.currentTimeMillis();
+			Long endTime = 0L;
 
 			switch (timeType)
 			{
@@ -1742,13 +1742,13 @@ public class TigerGuardDB {
 		}
 	}
 
-	public void pollUpdateInitiatedCheck(long guild, long poll)
+	public void pollUpdateInitiatedCheck(Long guild, Long poll)
 	{
 		String statement = "UPDATE " + db + guild + "polls SET initiated = true WHERE poll = " + poll + ";";
 		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
-	public void pollVoteUpdate(long poll, long member, char vote)
+	public void pollVoteUpdate(Long poll, Long member, char vote)
 	{
 		String statement = "SELECT 1 FROM " + db + "poll" + poll + " WHERE voter = " + member + " LIMIT 1;";
 		ResultSet rs = performQuery(statement);
@@ -1838,7 +1838,7 @@ public class TigerGuardDB {
 		return dataList;
 	}
 
-	public Pair<Integer, Integer> pollCollectResultsDuo(long guild, long poll)
+	public Pair<Integer, Integer> pollCollectResultsDuo(Long guild, Long poll)
 	{
 		int yay = 0;
 		int nay = 0;
@@ -1865,7 +1865,7 @@ public class TigerGuardDB {
 		return Pair.with(yay, nay);
 	}
 
-	public Triplet<Integer, Integer, Integer> pollCollectResultsTrio(long guild, long poll)
+	public Triplet<Integer, Integer, Integer> pollCollectResultsTrio(Long guild, Long poll)
 	{
 		int yay = 0;
 		int abs = 0;
@@ -1894,7 +1894,7 @@ public class TigerGuardDB {
 		return Triplet.with(yay, abs, nay);
 	}
 
-	private void pollDeletion(long guild, long poll)
+	private void pollDeletion(Long guild, Long poll)
 	{
 		performUpdate(String.format("DELETE FROM %s WHERE poll = %s", db + guild + "polls", poll), LogType.DATABASE_ERROR);
 		performUpdate(String.format("DROP TABLE %s;", db + "poll" + poll), LogType.DATABASE_ERROR);

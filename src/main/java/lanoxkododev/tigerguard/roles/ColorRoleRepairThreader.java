@@ -39,7 +39,7 @@ public class ColorRoleRepairThreader extends Thread {
 
 	private void repairColorRoles()
 	{
-		if (!tigerguardDB.checkRow("colorRoles", "id", event.getGuild().getIdLong()))
+		if (!tigerguardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 		{
 			tigerguardDB.createGuildColorRolesEntry(event.getGuild().getIdLong());
 		}
@@ -60,7 +60,7 @@ public class ColorRoleRepairThreader extends Thread {
 		{
 			try
 			{
-				if (tigerguardDB.checkRow("colorRoles", "id", guild.getIdLong()))
+				if (tigerguardDB.checkRow("colorRoles", "guild", guild.getIdLong()))
 				{
 					Long checked = tigerguardDB.getSingularRole("colorRoles", "color" + (a+1), guild.getIdLong());
 
@@ -121,7 +121,7 @@ public class ColorRoleRepairThreader extends Thread {
 
 		try
 		{
-			tigerguardDB.basicUpdate("colorRoles", " color" + (a+1), roleId, "id", guild.getIdLong());
+			tigerguardDB.basicUpdate("colorRoles", " color" + (a+1), roleId, "guild", guild.getIdLong());
 		}
 		catch (Exception e)
 		{

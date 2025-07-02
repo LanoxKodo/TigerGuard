@@ -42,7 +42,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
  */
 public class TigerGuard {
 	
-	String version = "2025m07a";
+	String version = "2025m07b";
 	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();

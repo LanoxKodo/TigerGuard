@@ -99,7 +99,7 @@ public class PromptColorThreader extends Thread {
 					a.addReaction(Emoji.fromFormatted(emojiItem)).queue();
 				}
 
-			tigerguardDB.basicUpdate("colorRoles", "embed", a.getIdLong(), "id", guild.getIdLong());
+			tigerguardDB.basicUpdate("colorRoles", "embed", a.getIdLong(), "guild", guild.getIdLong());
 		});
 	}
 }

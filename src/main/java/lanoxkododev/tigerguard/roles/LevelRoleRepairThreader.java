@@ -44,7 +44,7 @@ public class LevelRoleRepairThreader extends Thread {
 
 		EmbedMessageFactory embedder = new EmbedMessageFactory();
 
-		if (!tigerguardDB.checkRow(guild.getIdLong() + "lvlroles", "id", guild.getIdLong()))
+		if (!tigerguardDB.checkRow(guild.getIdLong() + "lvlroles", "guild", guild.getIdLong()))
 		{
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("No roles to repair", null, null, ColorCodes.MEH_NOTICE, "It appears I do not see any level roles for this server. If you have not set level roles before then use my other command for creating them; otherwise if this is an error than please report this on my support server!" +
 				"\n\nThis message will auto-delete in 1 minute.")).queue(msg -> msg.delete().queueAfter(60, TimeUnit.SECONDS));
@@ -65,7 +65,7 @@ public class LevelRoleRepairThreader extends Thread {
 			{
 				try
 				{
-					if (tigerguardDB.checkIfValueExists("levelRoles", "role"+a, "id", guild.getIdLong()))
+					if (tigerguardDB.checkIfValueExists("levelRoles", "role"+a, "guild", guild.getIdLong()))
 					{
 						Long checked = tigerguardDB.getGuildSingularLevelUpRole(guild.getIdLong(), "role"+a);
 

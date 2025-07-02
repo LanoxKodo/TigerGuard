@@ -47,7 +47,7 @@ public class LevelRoleAdderThreader extends Thread {
 		String statementBase = "UPDATE tigerguarddb.levelRoles SET ";
 		String statementAdd = "";
 
-		if (!tigerguardDB.checkRow("levelRoles", "id", guild.getIdLong()))
+		if (!tigerguardDB.checkRow("levelRoles", "guild", guild.getIdLong()))
 		{
 			tigerguardDB.insertGuildIntoLevelRoleTable(guild.getIdLong());
 		}
