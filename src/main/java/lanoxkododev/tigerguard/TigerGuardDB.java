@@ -298,6 +298,8 @@ public class TigerGuardDB {
 	 */
 	public boolean checkRow(String table, String column, Object searchItem)
 	{
+		if (!checkForTable(table)) return false;
+		
 		boolean found = false;
 		String statement = String.format("SELECT EXISTS(SELECT * FROM " + db + "%s WHERE %s = %s) AS EXISTS_BY_NAME", table, column, searchItem);
 
