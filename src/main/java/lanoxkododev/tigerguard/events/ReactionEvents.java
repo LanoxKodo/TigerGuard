@@ -34,8 +34,6 @@ public class ReactionEvents extends ListenerAdapter {
 			Guild guild = event.getGuild();
 			Long messageID = event.getMessageIdLong();
 			
-			event.getGuild().getTextChannelById(messageID);
-
 			if (tigerguardDB.checkForTable(guild.getIdLong() + "embeds"))
 			{
 				if (tigerguardDB.checkRow(guild.getIdLong() + "embeds", "message", messageID))
@@ -43,7 +41,8 @@ public class ReactionEvents extends ListenerAdapter {
 					reactionRoleResult(guild, member, event.getReaction().getEmoji().getFormatted(), messageID, "add");
 				}
 			}
-			else if (tigerguardDB.checkRow("colorRoles", "guild", guild.getIdLong()) && tigerguardDB.getValueLong("colorRoles", "embed", "guild", guild.getIdLong()).equals(messageID))
+			
+			if (tigerguardDB.checkRow("colorRoles", "guild", guild.getIdLong()) && tigerguardDB.getValueLong("colorRoles", "embed", "guild", guild.getIdLong()).equals(messageID))
 			{
 				colorProcess(event, member, guild);
 			}
