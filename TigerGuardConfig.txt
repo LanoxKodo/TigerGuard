@@ -1,6 +1,9 @@
 #TigerGuard Config File
 #Edit the below values so they fit your usecase, do not share these for security reasons
 
+#Debug Mode - mode for if debug messages should be printed (true/false)
+debugMode: false
+
 #Connection Info - sample info provided for what the defaults cling to for MariaDB
 address: localhost
 port: 3306

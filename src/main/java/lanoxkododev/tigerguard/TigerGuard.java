@@ -42,7 +42,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
  */
 public class TigerGuard {
 	
-	String version = "2025m11c";
+	String version = "2025m11d";
 	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();
@@ -52,7 +52,7 @@ public class TigerGuard {
 	public static TigerGuard TigerGuardInstance;
 	public static JDA jda;
 
-	private static boolean DEBUG_MODE = true;
+	private static boolean DEBUG_MODE;
 	protected static boolean STOP = false;
 
     private static final int SESSION_INVALID = 4006;
@@ -72,6 +72,8 @@ public class TigerGuard {
 		
     	if (util.verifyConfig("TigerGuardConfig.txt"))
     	{
+    		DEBUG_MODE = util.getBool("debugMode");
+    		
     		final String botToken = util.getValue("botToken");
     		
         	YoutubeAudioSourceManager yt = new YoutubeAudioSourceManager();

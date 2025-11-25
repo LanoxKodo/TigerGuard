@@ -126,4 +126,9 @@ public class Utils {
 	{
 		return configMap.get(key);
 	}
+	
+	public Boolean getBool(String key)
+	{
+		return (configMap.get(key).equalsIgnoreCase("true")) ? true : false;
+	}
 }

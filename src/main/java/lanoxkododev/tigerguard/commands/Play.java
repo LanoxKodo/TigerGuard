@@ -7,7 +7,6 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
-import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.Utils;
 import lanoxkododev.tigerguard.audio.AudioComplex;
 import lanoxkododev.tigerguard.audio.AudioLoader;
