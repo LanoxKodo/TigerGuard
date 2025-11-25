@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
 import lanoxkododev.tigerguard.audio.AudioComplex;
-import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
@@ -35,7 +34,6 @@ public class ButtonClickEvents extends ListenerAdapter {
 	@Override
 	public void onButtonInteraction(ButtonInteractionEvent event)
 	{
-		event.deferReply().queue(); //Apparently needed by 'roleembed' events way below. Not sure where to place for now so here be the earliest for no particular reason. Both love and hate REST event handling.
 		Guild guild = event.getGuild();
 		Member member = event.getMember();
 		List<Button> buttons = new ArrayList<>();
@@ -49,24 +47,19 @@ public class ButtonClickEvents extends ListenerAdapter {
 		}
 		catch (Exception e) {}
 
-		Integer val = null;
+		Integer embedPageVal = null;
 		if (emb1 != null)
 		{
 			if (emb1.getFooter() != null && (buttonName != "embedCreatorConfirm" || buttonName != "embedCreatorCancel"))
 			{
 				if (!buttonName.equals("embedCreatorConfirm") && !buttonName.equals("embedCreatorCancel") && !buttonName.equals("roleembed-confirm")
-					&& !buttonName.equals("roleembed-cancel")) val = Integer.parseInt(emb1.getFooter().getText().substring(5));
+					&& !buttonName.equals("roleembed-cancel")) embedPageVal = Integer.parseInt(emb1.getFooter().getText().substring(5));
 			}
 		}
 
 		String[] buttonDivider = buttonName.split("-", 2);
 		String buttonType = buttonDivider[0];
 		String buttonVariant = buttonDivider[1];
-
-		if (TigerGuard.isDebugMode())
-		{
-			logger.log(LogType.INFO, "Button pushed: " + buttonVariant + " && val=" + val);
-		}
 
 		switch (buttonType)
 		{
@@ -132,19 +125,19 @@ public class ButtonClickEvents extends ListenerAdapter {
 						}
 						break;
 					case "prev":
-						if ((val == 0) || (val - 1 == 0))
+						if ((embedPageVal == 0) || (embedPageVal - 1 == 0))
 						{
 							InputStream image = pages.getImageAsStream(0);
 							event.editMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(0))).setFiles(FileUpload.fromData(image, "image.png")).queue();
 						}
 						else
 						{
-							InputStream image = pages.getImageAsStream(val - 1);
-							event.editMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(val - 1))).setFiles(FileUpload.fromData(image, "image.png")).queue();
+							InputStream image = pages.getImageAsStream(embedPageVal - 1);
+							event.editMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(embedPageVal - 1))).setFiles(FileUpload.fromData(image, "image.png")).queue();
 						}
 						break;
 					case "next":
-						if ((val == 6) || (val + 1 == 6) || (val + 1 > 6))
+						if ((embedPageVal == 6) || (embedPageVal + 1 == 6) || (embedPageVal + 1 > 6))
 						{
 							InputStream image = pages.getImageAsStream(pages.imageListSize());
 							event.editMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(5))).setFiles(FileUpload.fromData(image, "image.png")).queue(a -> {
@@ -155,8 +148,8 @@ public class ButtonClickEvents extends ListenerAdapter {
 						}
 						else
 						{
-							InputStream image = pages.getImageAsStream(val + 1);
-							event.editMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(val + 1))).setFiles(FileUpload.fromData(image, "image.png")).queue();
+							InputStream image = pages.getImageAsStream(embedPageVal + 1);
+							event.editMessageEmbeds(embedder.paginater(pages.rankCustomizerPages(embedPageVal + 1))).setFiles(FileUpload.fromData(image, "image.png")).queue();
 						}
 						break;
 					case "end":
@@ -166,9 +159,9 @@ public class ButtonClickEvents extends ListenerAdapter {
 						}
 						break;
 					case "select":
-						if (val != 0)
+						if (embedPageVal != 0)
 						{
-							tigerGuardDB.updateUserRankImage(member.getIdLong(), val);
+							tigerGuardDB.updateUserRankImage(member.getIdLong(), embedPageVal);
 							event.replyEmbeds(embedder.simpleEmbed("Image selected", null, null, ColorCodes.FINISHED, "I have recorded your selection and marked it accordingly. Next time you or I run a rank event, this background will appear!")).setEphemeral(true).queue();
 						}
 						else
@@ -218,27 +211,19 @@ public class ButtonClickEvents extends ListenerAdapter {
 				}
 				break;
 			case "roleembed":
+			{
+				event.deferReply().queue();
 				switch (buttonVariant)
 				{
 					case "confirm":
 						{
 							tigerGuardDB.setReactionRoleEmbed(guild.getIdLong(), "custom");
-							
-							logger.log(LogType.DEBUG, "Message ID: " + event.getMessage().getIdLong());
-							
-							//event.getMessage().delete().queue();
-							//event.getChannel().sendMessageEmbeds((embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
-							//	+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*"))).queue();
+							logger.debug("Message ID: " + event.getMessage().getIdLong());
 							
 							deleteMessage(event);
-							//event.getMessage().delete().queue();
 							event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
 								+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*")).setEphemeral(true).queue();
 							
-							//event.getMessage().delete().queue(a -> {
-							//	event.replyEmbeds(embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
-							//		+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*")).setEphemeral(true).queue();
-							//});
 							tigerGuardDB.deleteRow("tempEmbedData", "guild", guild.getIdLong());
 						}
 						break;
@@ -253,6 +238,7 @@ public class ButtonClickEvents extends ListenerAdapter {
 						break;
 				}
 				break;
+			}
 			case "music":
 				switch (buttonVariant)
 				{

@@ -77,7 +77,7 @@ public class Play implements TGCommand {
 						if (request.contains("youtu.be") || request.contains("youtube.com"))
 						{
 							String title = getVideoTitle(request);
-							if (TigerGuard.isDebugMode()) logger.log(LogType.DEBUG, "Request link: " + request + " | Request title: " + title);
+							logger.debug("Request link: " + request + " | Request title: " + title);
 							request = "ytsearch: " + title;
 						}
 					}

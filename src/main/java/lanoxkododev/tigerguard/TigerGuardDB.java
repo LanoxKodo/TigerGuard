@@ -1079,50 +1079,39 @@ public class TigerGuardDB {
 	 * @see TigerGuardDB#generateRankCard(SlashCommandInteractionEvent)
 	 * @see TigerGuardDB#updateRankXp(Guild, Member, int, MessageReceivedEvent, GuildVoiceUpdateEvent)
 	 *
-	 * Formula:
-	 * rankLevels[a] 				  -> the value at index 'a' in array rankLevels[]
-	 * (Math.round("math logic") + 4) -> round to nearest whole number as int (3, 7, 12, etc)
-	 * / 5 * 5 						  -> modifiy number so that is always ended in 0 or 5 (5, 20, 175, etc)
+	 * Formula used changes depending on the level, if the equation were a flat one such as, the scaling between levels would lead to
+	 * issues where the xp needed to level up from 39 to 40 could be as large as the total xp from 0 to 35. So different equations are
+	 * involved the further it goes.
 	 */
 	protected void setupRankChartList()
 	{
-		logger.log(LogType.INFO, "Max Level:" + maxRankLevel);
-		logger.log(LogType.INFO, "Format:\nLevel # | Incremental req-xp increase | XP range min-max | Total XP once level up occurs");
-		for (int a = 0; a <= maxRankLevel; a++)
+		for (int a = 0; a < maxRankLevel; a++)
 		{
-			if (a != 0) //a is not equal to 0
+			if (a <= 3)
 			{
-				if (a < maxRankLevel) //ranks 1 through 1 below max
-				{
-					if (a <= 3) //1-3 (0 omitted due to first if check)
-				    {
-				    	rankLevels[a] = (Math.round((rankLevels[a-1]+(a*135))) + 4) / 5 * 5;
-				    }
-				    else if (a > 3 && a < 11) //4-10
-				    {
-				    	rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(135+(0.03*a)))*(1.15+(0.02*a)))) + 4) / 5 * 5;
-				    }
-				    else if (a > 10 && a < 21) //11-20
-				    {
-				    	rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.03*a)))*(1.17+(0.02*a)))) + 4) / 5 * 5;
-				    }
-				    else //21 and beyond
-				    {
-				    	rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.05*a)))*(1.19+(0.03*a)))) + 4) / 5 * 5;
-				    }
-
-					System.out.println(String.format("Level %1$s | %2$s | %3$s-%4$s | %4$s", a, (rankLevels[a]-rankLevels[a-1]), rankLevels[a-1], rankLevels[a]));
-				}
-				else //max rank
-				{
-					System.out.println(String.format("Level %1$s | --:-- | %2$s-%3$s | %3$s", a, rankLevels[a-1], "max"));
-				}
+				if (a != 0) rankLevels[a] = (Math.round((rankLevels[a-1]+(a*135))) + 4) / 5 * 5;
+				else rankLevels[a] = 75;
 			}
-			else //rank 0
+			
+			else if (a < 11) rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(135+(0.03*a)))*(1.15+(0.02*a)))) + 4) / 5 * 5;
+			else if (a < 21) rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.03*a)))*(1.17+(0.02*a)))) + 4) / 5 * 5;
+			else rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.05*a)))*(1.19+(0.03*a)))) + 4) / 5 * 5;
+		}
+		
+		if (TigerGuard.isDebugMode())
+		{
+			logger.log(LogType.RANK_INFO, "Max Level:" + maxRankLevel);
+			logger.log(LogType.RANK_INFO, "Format:\nLevel # | XP to level up | Total XP");
+			
+			StringBuilder data = new StringBuilder();
+			for (int a = 0; a < maxRankLevel; a++)
 			{
-				rankLevels[a] = 75; //Base XP to reach next level (ie 0 to 1)
-				System.out.println(String.format("Level %1$s | %2$s | %1$s-%2$s | %2$s", a, rankLevels[a]));
+				String formatter = "Level %1$-2s | %2$6s | %3$s";
+				if (a != (maxRankLevel-1)) formatter += "\n";
+				int xpGainReqCalc = (a == 0) ? rankLevels[a] : rankLevels[a]-rankLevels[a-1];
+				data.append(String.format(formatter, (a+1), xpGainReqCalc, rankLevels[a]));
 			}
+			logger.log(data.toString());
 		}
 	}
 
@@ -1222,7 +1211,7 @@ public class TigerGuardDB {
 			logger.logErr(LogType.DATABASE_ERROR, "Unable to get the xp value and level for user " + member.getIdLong() + " in guild " + guild.getIdLong(), null, e);
 		}
 
-		if (TigerGuard.isDebugMode()) logger.log(LogType.DEBUG, "member's level and xp are: " + memberLevel + " | " + memberXP);
+		logger.debug("Member's level and xp are: " + memberLevel + " | " + memberXP);
 
 		Long levelRole = null;
 		if (memberLevel != 0)
@@ -1425,9 +1414,11 @@ public class TigerGuardDB {
 
 				if (TigerGuard.isDebugMode())
 				{
-					logger.log(LogType.DEBUG, "loop check: " + memberLevel + " | " + checker + " | " + increasedAmount);
+					logger.log(String.format("updateGuildRankXp: memberLevel(%d), checker(%d), increasedAmount(%d)", memberLevel, checker, increasedAmount));
+					//logger.log(LogType.DEBUG, "loop check: " + memberLevel + " | " + checker + " | " + increasedAmount);
 				}
 			}
+			
 			Long levelRole = null;
 			if (memberLevel != 0)
 			{
@@ -1577,12 +1568,12 @@ public class TigerGuardDB {
 		//If user does NOT have a preferred role selected - ie never set one
 		if (checkIfValueExists(guild.getIdLong() + "xp", "activeRole", "member", member.getIdLong()))
 		{
-			logger.log(LogType.DEBUG, "Member " + member.getEffectiveName() + " is level " + level);
+			logger.debug("Member " + member.getEffectiveName() + " is level " + level);
 
 			for (int a = 0; a < (level-1); a++)
 			{
 				Role lvlRole = guild.getRoleById(roles.get(a));
-				logger.log(LogType.DEBUG, "Iterating through..." + a + " >> " + lvlRole.getName());
+				logger.debug("Iterating through..." + a + " >> " + lvlRole.getName());
 
 				if (memberRoles.contains(lvlRole))
 				{

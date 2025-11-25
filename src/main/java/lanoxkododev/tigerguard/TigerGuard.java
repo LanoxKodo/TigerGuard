@@ -42,7 +42,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
  */
 public class TigerGuard {
 	
-	String version = "2025m09a";
+	String version = "2025m11c";
 	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();
@@ -95,7 +95,8 @@ public class TigerGuard {
     		//Will need to use '.useSharding(#, #)' if the bot becomes bogged from higher usage than it currently sees.
     		jda = JDABuilder.createDefault(botToken).setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(client))
     			.enableIntents(instantiateIntents()).enableCache(CacheFlag.VOICE_STATE).setMemberCachePolicy(MemberCachePolicy.ALL)
-    			.setActivity(Activity.watching("that evil yarn 🧶")).setStatus(OnlineStatus.ONLINE)
+    			.setActivity(Activity.customStatus("Doing guard things, totally")).setStatus(OnlineStatus.ONLINE)
+    			//.setActivity(Activity.watching("that evil yarn 🧶")).setStatus(OnlineStatus.ONLINE)
     			.addEventListeners(commandCenter, new JoinLeaveEvents(), new ButtonClickEvents(), new ChannelEvents(),
     				new SelectEvents(), new ModalEvents(), new MessageEvents(), new ReactionEvents()).build().awaitReady();
 
@@ -152,7 +153,7 @@ public class TigerGuard {
 
 	/**
 	 * Diagnostic for reviewal purposes, helps identify DB errors if any occur if entries do not match what the bot sees.<br>
-	 * eg, if the bot was removed from a server and the bot didn't not process it for some reason, or was offline, the data should be removed. In this case, TODO create this logic later. 
+	 * eg, if the bot was removed from a server and the bot didn't not process it for some reason, or was offline, the data should be removed. In such case, TODO create this logic later. 
 	 */
 	private void guildReview()
 	{

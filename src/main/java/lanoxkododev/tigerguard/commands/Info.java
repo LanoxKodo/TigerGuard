@@ -36,6 +36,6 @@ public class Info implements TGCommand {
 	public void execute(SlashCommandInteractionEvent event)
 	{
 		event.replyEmbeds(embedder.infoEmbed("TigerGuard - " + TigerGuard.getTigerGuard().getVersion(),
-			null, null, ColorCodes.TIGER_FUR, "Written in Java")).queue();
+			null, null, ColorCodes.TIGER_FUR, "Administrative Discord bot. Writen in Java.")).queue();
 	}
 }

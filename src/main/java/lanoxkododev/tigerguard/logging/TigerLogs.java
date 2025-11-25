@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import lanoxkododev.tigerguard.TigerGuard;
+
 public class TigerLogs {
 
 	/**
@@ -66,5 +68,10 @@ public class TigerLogs {
 			System.out.println(lineA + "\n┣@: " + lineB + end + "X: " + optStatement);
 			e.printStackTrace();
 		}
+	}
+	
+	public void debug(@NotNull String statement)
+	{
+		if (TigerGuard.isDebugMode()) log(LogType.DEBUG, String.format("%s | %s", Thread.currentThread().getStackTrace()[2].getClassName(), statement));
 	}
 }
