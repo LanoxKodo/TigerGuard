@@ -61,7 +61,7 @@ public class ModalEvents extends ListenerAdapter {
 
 					int currentRoleCount = tigerGuardDB.getGuildKnownLevelUpRoleCount(event.getGuild().getIdLong());
 
-					if (amountToMake < remainingRoleSlots && currentRoleCount < tigerGuardDB.getMaxRankLevel())
+					if (amountToMake < remainingRoleSlots && currentRoleCount < tigerGuardDB.getMaxLevel())
 					{
 						manager.initiateLevelRoleSetup(event, amountToMake, currentRoleCount);
 

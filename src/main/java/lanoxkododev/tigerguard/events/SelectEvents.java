@@ -373,7 +373,7 @@ public class SelectEvents extends ListenerAdapter {
 					case "s5-level-operations-create":
 						Long messageToDel = event.getMessageIdLong();
 
-						int max = tigerGuardDB.getMaxRankLevel();
+						int max = tigerGuardDB.getMaxLevel();
 						int current = 0;
 
 						if (tigerGuardDB.checkForTable(event.getGuild().getIdLong() + "lvlroles"))

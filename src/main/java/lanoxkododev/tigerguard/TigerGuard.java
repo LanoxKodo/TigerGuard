@@ -2,7 +2,6 @@ package lanoxkododev.tigerguard;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 
@@ -42,7 +41,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
  */
 public class TigerGuard {
 	
-	String version = "2025m11d";
+	String version = "2025m11e";
 	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();
@@ -50,7 +49,7 @@ public class TigerGuard {
 	Utils util = new Utils();
 
 	public static TigerGuard TigerGuardInstance;
-	public static JDA jda;
+	private static JDA jda;
 
 	private static boolean DEBUG_MODE;
 	protected static boolean STOP = false;
@@ -89,7 +88,6 @@ public class TigerGuard {
 
     		final var audioComplex = new AudioComplex(client, "TG_Audio");
 
-    		//Command setup - Note: while functional, file needs to be revised updating/removing/adding commands in a more dynamic way, lower priority as no commands are in design or needing immediate changes.
     		final var commandCenter = new CommandCenter(audioComplex);
 
     		loadBeforeJDA();
@@ -98,14 +96,13 @@ public class TigerGuard {
     		jda = JDABuilder.createDefault(botToken).setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(client))
     			.enableIntents(instantiateIntents()).enableCache(CacheFlag.VOICE_STATE).setMemberCachePolicy(MemberCachePolicy.ALL)
     			.setActivity(Activity.customStatus("Doing guard things, totally")).setStatus(OnlineStatus.ONLINE)
-    			//.setActivity(Activity.watching("that evil yarn 🧶")).setStatus(OnlineStatus.ONLINE)
     			.addEventListeners(commandCenter, new JoinLeaveEvents(), new ButtonClickEvents(), new ChannelEvents(),
     				new SelectEvents(), new ModalEvents(), new MessageEvents(), new ReactionEvents()).build().awaitReady();
 
     		timeThread = new TimingThread();
     		timeThread.start();
     		terminalThread.start();
-    		guildReview();
+    		if (DEBUG_MODE) guildReview();
 
     		client.on(WebSocketClosedEvent.class).subscribe((event) -> {
                 if (event.getCode() == SESSION_INVALID) {

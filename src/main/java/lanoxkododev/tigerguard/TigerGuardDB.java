@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.voice.GuildVoiceUpdateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -38,16 +39,16 @@ public class TigerGuardDB {
 	TimeDates dates = new TimeDates();
 	TigerLogs logger = new TigerLogs();
 	public static TigerGuardDB tigerGuardDB;
-	public static int maxRankLevel = 40;
-	protected static int[] rankLevels = new int[maxRankLevel]; /**@see TigerGuardDB#setupRankChartList() for implementation details.*/
+	public static int maxLevel = 40;
+	protected static int[] levelExpCaps = new int[maxLevel]; /**@see TigerGuardDB#setupRankChartList() for implementation details.*/
 
 	static Connection connection;
 	final String db;
 
 	/*
-	 * ########################
-	 * TODO: CONNECTION RELATED
-	 * ########################
+	 * ##################
+	 * CONNECTION RELATED
+	 * ##################
 	 */
 	public TigerGuardDB(String address, String databaseName, String databaseUser, String databasePass)
 	{
@@ -55,6 +56,92 @@ public class TigerGuardDB {
 		db = databaseName + ".";
 		initConnection(address, databaseName, databaseUser, databasePass);
 		setupRankChartList();
+	}
+	
+	/**
+	 * Simple boolean returning method for if the first number provided or equal to or greater than the second number.
+	 * @param num1
+	 * @param num2
+	 * @return
+	 */
+	private boolean meetsLevelUp(int num1, int num2)
+	{
+		if (num1 >= num2) return true;
+		else return false;
+	}
+	
+	/**
+	 * Function for correcting any mis-aligned data based on levelExpCaps and the member's xp value.
+	 * Generally not expected to be used whatsoever unless a bug in the level system is detected.
+	 * Thus no calls are made to this method during normal operation but left as part of internal testing
+	 * when things appear to have gone awry at somepoint.
+	 * 
+	 * @param guild - the guild being iterated on.
+	 */
+	public void vetUserLevels(Guild guild)
+	{
+		String guildMesh = guild.getIdLong() + "xp";
+		String dbQuery = String.format("SELECT * FROM %s%s;", db, guildMesh);
+		ResultSet rs = performQuery(dbQuery);
+		
+		String memberID = "";
+		int memberLevel = 0;
+		int memberXP = 0;
+		
+		try
+		{
+			logger.debug("Verifying XP and Level data.");
+			while (rs.next())
+			{
+				memberID = rs.getString("member");
+				memberLevel = rs.getInt("level");
+				memberXP = rs.getInt("xp");
+				
+				if (memberXP != 0)
+				{
+					int currentLevel = 1;
+					
+					for (int a = 0; a < levelExpCaps.length; a++)
+					{
+						int levelUpAtLevel = levelExpCaps[a];
+						
+						if (meetsLevelUp(memberXP, levelUpAtLevel)) currentLevel++;
+						else
+						{
+							if (memberLevel != currentLevel)
+							{
+								String statement = "UPDATE " + db + guildMesh + " SET level = " + currentLevel + " WHERE member = " + memberID + ";";
+								performUpdate(statement, LogType.DATABASE_ERROR);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.RANK_ERROR, dbQuery, "Error during verification of xp to level data.", e);
+		}
+
+		ResultSet rs2 = performQuery(dbQuery);
+		try
+		{
+			logger.debug("Beginning verification of level roles per member to ensure they all are correct.");
+			while (rs2.next())
+			{
+				memberID = rs2.getString("member");
+				memberLevel = rs2.getInt("level");
+
+				LevelRoleProgressionHandler(guild, guild.getMemberById(Long.parseLong(memberID)), memberLevel);
+			}
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.RANK_ERROR, dbQuery, "Error trying to verify and reprovision level roles.", e);
+		}
+		
+		logger.debug("All processes for vetting have concluded.");
 	}
 
 	protected void initConnection(String address, String databaseName, String databaseUser, String databasePass)
@@ -91,9 +178,9 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * ########################
-	 * TODO: PERFORM STATEMENTS
-	 * ########################
+	 * ##################
+	 * PERFORM STATEMENTS
+	 * ##################
 	 */
 
 	/**
@@ -168,10 +255,6 @@ public class TigerGuardDB {
 
 		return ps;
 	}
-	
-	/*
-	 * TODO: modern methods
-	 */
 	
 	/**
 	 * Check if the provided table exists in the database.
@@ -344,9 +427,9 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * ######################
-	 * TODO: CORE GET METHODS
-	 * ######################
+	 * ################
+	 * CORE GET METHODS
+	 * ################
 	 */
 	
 	/**
@@ -482,12 +565,6 @@ public class TigerGuardDB {
 		
 		return null;
 	}
-
-	/*
-	 * ######
-	 * ######
-	 * ######
-	 */
 
 	/**
 	 * Get the channel the bot should message to for announcement-like events.
@@ -876,9 +953,9 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * ##########################
-	 * TODO: CHECKERS AND HELPERS
-	 * ##########################
+	 * ####################
+	 * CHECKERS AND HELPERS
+	 * ####################
 	 */
 
 	public void deleteColumn(String statement)
@@ -1047,9 +1124,9 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * ####################
-	 * TODO: TABLE HANDLERS
-	 * ####################
+	 * ##############
+	 * TABLE HANDLERS
+	 * ##############
 	 */
 
 	public void newGuildEntry(Long guild)
@@ -1066,14 +1143,14 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * ########################################
-	 * TODO: SERVER LEVELING AND XP TABLE LOGIC
-	 * ########################################
+	 * ##################################
+	 * SERVER LEVELING AND XP TABLE LOGIC
+	 * ##################################
 	 */
 
 	/**
 	 * Fill in the RankChart using the formula. The first value of the array will be the base value of 75.
-	 * maxRankLevel is set to 40 but due to Java int[] it will read as 0-39, our logic will accommodate level requirements
+	 * maxLevel is set to 40 but due to Java int[] it will read as 0-39, our logic will accommodate level requirements
 	 *
 	 * For max level handling in action:
 	 * @see TigerGuardDB#generateRankCard(SlashCommandInteractionEvent)
@@ -1085,39 +1162,39 @@ public class TigerGuardDB {
 	 */
 	protected void setupRankChartList()
 	{
-		for (int a = 0; a < maxRankLevel; a++)
+		for (int a = 0; a < maxLevel; a++)
 		{
 			if (a <= 3)
 			{
-				if (a != 0) rankLevels[a] = (Math.round((rankLevels[a-1]+(a*135))) + 4) / 5 * 5;
-				else rankLevels[a] = 75;
+				if (a != 0) levelExpCaps[a] = (Math.round((levelExpCaps[a-1]+(a*135))) + 4) / 5 * 5;
+				else levelExpCaps[a] = 75;
 			}
 			
-			else if (a < 11) rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(135+(0.03*a)))*(1.15+(0.02*a)))) + 4) / 5 * 5;
-			else if (a < 21) rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.03*a)))*(1.17+(0.02*a)))) + 4) / 5 * 5;
-			else rankLevels[a] = (int) (Math.round((rankLevels[a-1]+(a*(165+(0.05*a)))*(1.19+(0.03*a)))) + 4) / 5 * 5;
+			else if (a < 11) levelExpCaps[a] = (int) (Math.round((levelExpCaps[a-1]+(a*(135+(0.03*a)))*(1.15+(0.02*a)))) + 4) / 5 * 5;
+			else if (a < 21) levelExpCaps[a] = (int) (Math.round((levelExpCaps[a-1]+(a*(165+(0.03*a)))*(1.17+(0.02*a)))) + 4) / 5 * 5;
+			else levelExpCaps[a] = (int) (Math.round((levelExpCaps[a-1]+(a*(165+(0.05*a)))*(1.19+(0.03*a)))) + 4) / 5 * 5;
 		}
 		
 		if (TigerGuard.isDebugMode())
 		{
-			logger.log(LogType.RANK_INFO, "Max Level:" + maxRankLevel);
+			logger.log(LogType.RANK_INFO, "Max Level:" + maxLevel);
 			logger.log(LogType.RANK_INFO, "Format:\nLevel # | XP to level up | Total XP");
 			
 			StringBuilder data = new StringBuilder();
-			for (int a = 0; a < maxRankLevel; a++)
+			for (int a = 0; a < maxLevel; a++)
 			{
 				String formatter = "Level %1$-2s | %2$6s | %3$s";
-				if (a != (maxRankLevel-1)) formatter += "\n";
-				int xpGainReqCalc = (a == 0) ? rankLevels[a] : rankLevels[a]-rankLevels[a-1];
-				data.append(String.format(formatter, (a+1), xpGainReqCalc, rankLevels[a]));
+				if (a != (maxLevel-1)) formatter += "\n";
+				int xpGainReqCalc = (a == 0) ? levelExpCaps[a] : levelExpCaps[a]-levelExpCaps[a-1];
+				data.append(String.format(formatter, (a+1), xpGainReqCalc, levelExpCaps[a]));
 			}
 			logger.log(data.toString());
 		}
 	}
 
-	public int getMaxRankLevel()
+	public int getMaxLevel()
 	{
-		return maxRankLevel;
+		return maxLevel;
 	}
 
 	/*
@@ -1165,7 +1242,7 @@ public class TigerGuardDB {
 	 */
 	public void insertUserIntoGuildXPTable(String table, Long user)
 	{
-		performUpdate("INSERT INTO " + db + table + " (member, level, xp, activeRole) VALUES (" + user + ", 0, 0, null);", LogType.XP_DATABASE_ERROR);
+		performUpdate("INSERT INTO " + db + table + " (member, level, xp, activeRole) VALUES (" + user + ", 1, 0, null);", LogType.XP_DATABASE_ERROR);
 	}
 
 	/*
@@ -1178,7 +1255,7 @@ public class TigerGuardDB {
 
 	public void firstInsertionGuildKnownLevelRoleValue(Long guild, int initialInput)
 	{
-		performUpdate("UPDATE " + db + "lvlroles SET knownLevelRoles = " + initialInput + " WHERE guild = " + guild + ");", LogType.DATABASE_ERROR);
+		performUpdate("UPDATE " + db + "levelRoles SET knownLevelRoles = " + initialInput + " WHERE guild = " + guild + ");", LogType.DATABASE_ERROR);
 	}
 
 	public void generateGuildRankCard(SlashCommandInteractionEvent event)
@@ -1224,11 +1301,12 @@ public class TigerGuardDB {
 		}
 
 		//If memberlevel is less than max level
-		if (memberLevel < maxRankLevel)
+		if (memberLevel < maxLevel)
 		{
 			try
 			{
-	            msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRankImage(member, guild.getRoleById(levelRole).getName(), memberLevel, memberXP, rankLevels[memberLevel], rankLevels[memberLevel-1], false), "rankCard.png"));
+				int previousCap = (memberLevel <= 1) ? 0 : levelExpCaps[memberLevel-2];
+	            msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRankImage(member, guild.getRoleById(levelRole).getName(), memberLevel, memberXP, levelExpCaps[memberLevel-1], previousCap, false), "rankCard.png"));
 
 	            hook.sendMessage(msgBuilder.build()).queue(msg -> {
 	            	msg.delete().queueAfter(60, TimeUnit.SECONDS);
@@ -1244,7 +1322,7 @@ public class TigerGuardDB {
 		{
 			try
 			{
-	            msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRankImage(member, guild.getRoleById(levelRole).getName(), memberLevel, memberXP, rankLevels[maxRankLevel-1], rankLevels[memberLevel-1], true), "rankCard.png"));
+	            msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRankImage(member, guild.getRoleById(levelRole).getName(), memberLevel, memberXP, levelExpCaps[maxLevel-1], levelExpCaps[memberLevel-1], true), "rankCard.png"));
 
 	            hook.sendMessage(msgBuilder.build()).queue(msg -> {
 	            	msg.delete().queueAfter(60, TimeUnit.SECONDS);
@@ -1323,7 +1401,7 @@ public class TigerGuardDB {
 	{
 		if (!checkRow("globalUserData", "member", member))
 		{
-			performUpdate("INSERT INTO " + db + "globalUserData (member, level, xp, bgimage) VALUES (" + member + ", 0, 0, 1);", LogType.DATABASE_ERROR);
+			performUpdate("INSERT INTO " + db + "globalUserData (member, level, xp, bgimage) VALUES (" + member + ", 1, 0, 1);", LogType.DATABASE_ERROR);
 		}
 	}
 
@@ -1364,14 +1442,11 @@ public class TigerGuardDB {
 	{
 		checkIfUserExistsInGlobalData(member.getIdLong());
 
-		if (dates.getBoostDateStatus())
-		{
-			xpGain = (int)Math.round(xpGain * dates.getBoostValue());
-		}
+		if (dates.getBoostDateStatus()) xpGain = (int)Math.round(xpGain * dates.getBoostValue());
 
 		String guildMesh = guild.getIdLong() + "xp";
 		int memberXP = 0;
-		int memberLevel = 0;
+		int memberLevel = 1;
 		MessageCreateBuilder msgBuilder = new MessageCreateBuilder();
 
 		if (getGuildKnownLevelUpRoleCount(guild.getIdLong()) != 0)
@@ -1383,7 +1458,6 @@ public class TigerGuardDB {
 			{
 				while (rs.next())
 				{
-					//Set our temp instance ints to be equal to the returned db values.
 					memberLevel = rs.getInt("level");
 					memberXP = rs.getInt("xp");
 				}
@@ -1392,160 +1466,66 @@ public class TigerGuardDB {
 			{
 				logger.logErr(LogType.RANK_ERROR, "Failure retrieving xp_data for " + member.getIdLong() + " for guild " + guild.getIdLong(), initialQuery, e);
 			}
+			
+			//Max level pre-catch, exit if member is max level. Does not catch those leveling from 39 to 40 in this instance.
+			if (memberLevel == maxLevel) return;
 
 			//Begin checking if the current xp amount plus gained xp is more than 1 level worth of increase.
-			int increasedAmount = 0;
-			int checker = memberLevel;
+			int combinedXP = memberXP + xpGain;
 			boolean checkFinished = false;
-
 			while (!checkFinished)
 			{
-				if ((memberXP + xpGain) > rankLevels[checker])
+				if (meetsLevelUp(combinedXP, levelExpCaps[memberLevel-1]))
 				{
-					checker++;
-					increasedAmount++;
+					memberLevel++;
+					
+					if (memberLevel == (maxLevel-1))
+					{
+						if (combinedXP > levelExpCaps[maxLevel-1])
+						{
+							combinedXP = levelExpCaps[maxLevel-1];
+							break;
+						}
+					}
+					
+					continue;
 				}
-				else
-				{
-					memberLevel += increasedAmount;
-					checkFinished = true;
-					break;
-				}
+				else break;
+			}
 
-				if (TigerGuard.isDebugMode())
-				{
-					logger.log(String.format("updateGuildRankXp: memberLevel(%d), checker(%d), increasedAmount(%d)", memberLevel, checker, increasedAmount));
-					//logger.log(LogType.DEBUG, "loop check: " + memberLevel + " | " + checker + " | " + increasedAmount);
-				}
+			Long levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
+
+			//Perform level-role removal and provisioning checks
+			LevelRoleProgressionHandler(guild, member, memberLevel);
+			
+			//Finalize all logic
+			String statementNew = String.format("UPDATE %s%s SET xp = %s, level = %s, WHERE member = %s;", db, guildMesh, combinedXP, memberLevel, member.getIdLong());
+			performUpdate(statementNew, LogType.DATABASE_ERROR);
+			
+			//Create level-card after all things have been finalized.
+			try
+			{
+				msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRanklevelUpImage(guild, member, guild.getRoleById(levelRole).getName(), memberLevel, false), "rankCard.png"));
+			}
+			catch (Exception e)
+			{
+				logger.logErr(LogType.ERROR, "Failure generating rank card from updateRankXp method.", statementNew, e);
 			}
 			
-			Long levelRole = null;
-			if (memberLevel != 0)
+			//Where to send the level-up-card
+			if (voiceEvent != null) TigerGuard.TigerGuardInstance.getJDA().getVoiceChannelById(voiceEvent.getChannelLeft().getIdLong()).sendMessage(msgBuilder.build()).queue();
+			else
 			{
-				levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
-			}
-
-			//If userLevel is not equal to max level, max level is given artifically once the user reaches the last index of rankLevels[] xp requirement.
-			if (memberLevel != maxRankLevel)
-			{
-				//If user's level is 1 less than max level and xpGain would lead to leveling up. Cap xp to max total xp possible and update level to max level.
-				//maxRankLevel-1 is being used because our scale starts at 0 and goes up to max 39 (max, this equals 40). the minus 1 gives up the last xp level up req. for the highest level in the rankLevels array. Then we give 40 artifically.
-				if ((memberLevel == (maxRankLevel-1)) && ((memberXP + xpGain) >= rankLevels[maxRankLevel-1]))
-				{
-					String statement = "UPDATE " + db + guildMesh + " SET xp = " + rankLevels[maxRankLevel-1] + ", level = " + maxRankLevel + " WHERE member = " + member.getIdLong() + ";";
-					performUpdate(statement, LogType.DATABASE_ERROR);
-
-					try
-					{
-						msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRanklevelUpImage(guild, member, guild.getRoleById(levelRole).getName(), memberLevel, false), "rankCard.png"));
-					}
-					catch (Exception e)
-					{
-						logger.logErr(LogType.ERROR, "Failure generating rank card from updateRankXp method.", statement, e);
-					}
-
-					if (checkIfValueExists("guildInfo", "botChannel", "guild", guild.getIdLong()))
-					{
-						guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong())).sendMessage(msgBuilder.build()).queue();
-					}
-					else
-					{
-						if (messageEvent != null)
-						{
-							messageEvent.getChannel().sendMessage(msgBuilder.build()).queue();
-						}
-						else
-						{
-							if (getGuildBotSpamChannel(guild.getIdLong()) != null)
-							{
-								guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong())).sendMessage(msgBuilder.build()).queue();
-							}
-							else
-							{
-								guild.getDefaultChannel().asTextChannel().sendMessage(msgBuilder.build()).queue();
-							}
-						}
-					}
-
-					/*
-					 * TODO - advanced logic for preference role(s) might need to be handled here. Debug for edge-cases
-					 * For now, the following will eventually be expanded to actually handle these cases, but commented out for now.
-					 */
-					//if (!hasValue(guild.getIdLong() + "xp", "activeRole", "id", member.getIdLong()))
-					//else ...
-
-					//Current usage, test for edge cases
-					guild.addRoleToMember(member, guild.getRoleById(getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), maxRankLevel))).queue();
-				}
-				//Else, user's level is not 1 less than max level, do...
-				else
-				{
-					//If user's xp plus the gianed xp is less than the level up requirement, update only the xpValue.
-					//if ((userXP + xpGain) < ((rankLevels[userLevel]-rankLevels[userLevel-1])))
-					if ((memberXP + xpGain) < (rankLevels[memberLevel]) && increasedAmount == 0)
-					{
-						String statement = "UPDATE " + db + guildMesh + " SET xp = " + (memberXP+xpGain) + " WHERE member = " + member.getIdLong() + ";";
-						performUpdate(statement, LogType.DATABASE_ERROR);
-					}
-
-					//Else, user's xp plus the gained xp is equal to or greater than the level up requirement, update the xpValue and xpLevel.
-					else
-					{
-						//memberLevel+1
-						String statement = "UPDATE " + db + guildMesh + " SET xp = " + (memberXP+xpGain) + ", level = " + memberLevel + " WHERE member = " + member.getIdLong() + ";";
-						performUpdate(statement, LogType.DATABASE_ERROR);
-
-						try
-						{
-							msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRanklevelUpImage(guild, member, guild.getRoleById(levelRole).getName(), memberLevel, false), "rankCard.png"));
-						}
-						catch (Exception e)
-						{
-							logger.log(LogType.ERROR, "Failure generating rank card from updateRankXp method.");
-							e.printStackTrace();
-						}
-
-						if (messageEvent != null)
-						{
-							Long levelChannel = getGuildLevelChannel(guild.getIdLong());
-							if (levelChannel != null)
-							{
-								guild.getTextChannelById(levelChannel).sendMessage(msgBuilder.build()).queue();
-							}
-							else
-							{
-								messageEvent.getChannel().sendMessage(msgBuilder.build()).queue();
-							}
-						}
-						else
-						{
-							if (getGuildBotSpamChannel(guild.getIdLong()) != null)
-							{
-								guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong())).sendMessage(msgBuilder.build()).queue();
-							}
-							else
-							{
-								guild.getDefaultChannel().asTextChannel().sendMessage(msgBuilder.build()).queue();
-							}
-						}
-
-					}
-
-					if (memberLevel != 0)
-					{
-						if (increasedAmount != 0)
-						{
-							for (int a = 1; a <= memberLevel; a++)
-							{
-								guild.addRoleToMember(member, guild.getRoleById(getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), a))).queue();
-							}
-						}
-						else
-						{
-							guild.addRoleToMember(member, guild.getRoleById(getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel))).queue();
-						}
-					}
-				}
+				TextChannel specifiedChannel = null;
+				
+				if (checkIfValueExists("guildInfo", "LevelChannel", "guild", guild.getIdLong()))
+					specifiedChannel = guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong()));
+				else if (checkIfValueExists("guildInfo", "BotChannel", "guild", guild.getIdLong()))
+					specifiedChannel = guild.getTextChannelById(getGuildBotSpamChannel(guild.getIdLong()));
+				else if (messageEvent != null)
+					specifiedChannel = messageEvent.getChannel().asTextChannel();
+				
+				specifiedChannel.sendMessage(msgBuilder.build()).queue();
 			}
 		}
 	}
@@ -1584,6 +1564,33 @@ public class TigerGuardDB {
 
 		//TODO - Possible edge-case identified, test in next iteration - relates to StringSelect file.
 	}
+	
+	private void LevelRoleProgressionHandler(Guild guild, Member member, int memberLevel)
+	{
+		ArrayList<Long> lvlRoleIDs = getGuildLevelRoleIDs(guild.getIdLong());
+		ArrayList<Role> lvlRoles = new ArrayList<Role>();
+		
+		lvlRoleIDs.forEach(id -> {
+			lvlRoles.add(guild.getRoleById(id));
+		});
+		
+		if (member != null && !member.getUser().isBot())
+		{
+			List<Role> memberRoles = member.getRoles();
+			
+			lvlRoles.forEach(lvlRole -> {
+				if (memberRoles.contains(lvlRole))
+				{
+					logger.debug(String.format("Removing role `%s` (%s) from member %s", lvlRole.getName(), lvlRole.getIdLong(), member.getIdLong()));
+					guild.removeRoleFromMember(member, lvlRole).queue();
+				}
+			});
+
+			logger.debug(String.format("Adding role `%s` (%s) to member", lvlRoles.get(memberLevel-1), lvlRoles.get(memberLevel-1).getIdLong()));
+			guild.addRoleToMember(member, lvlRoles.get(memberLevel-1)).queue();
+		}
+		else logger.debug(String.format("Member `%s` not found in server.", member.getIdLong()));
+	}
 
 	/**
 	 * Used to get the level roles for a server
@@ -1594,7 +1601,7 @@ public class TigerGuardDB {
 	public ArrayList<Long> getGuildLevelRoleIDs(Long guild)
 	{
 		ArrayList<Long> results = new ArrayList<>();
-		String statement = "SELECT * FROM " + db + "lvlroles WHERE guild = " + guild + ";";
+		String statement = "SELECT * FROM " + db + "levelRoles WHERE guild = " + guild + ";";
 
 		try
 		{
@@ -1648,9 +1655,9 @@ public class TigerGuardDB {
 	}
 
 	/**
-	 * ######################
-	 * TODO: POLL TABLE LOGIC
-	 * ######################
+	 * ################
+	 * POLL TABLE LOGIC
+	 * ################
 	 */
 
 	public void createGuildPollTable(Long guild)

@@ -28,13 +28,15 @@ public class TigerLogs {
 	 */
 	public void log(@NotNull Enum<LogType> logVariant, @NotNull String logStatement)
 	{
+		/*
 		if (logVariant.equals(LogType.DEBUG))
 		{
 			//[HH:mm:ss DEBUG] <Message>
 			//┗@: <Location>
 			logStatement += "\n┗@: " + Thread.currentThread().getStackTrace()[2].getClassName() + "." +
-				Thread.currentThread().getStackTrace()[2].getMethodName() + "()";
+				Thread.currentThread().getStackTrace()[3].getMethodName() + "()";
 		}
+		*/
 
 		System.out.println(String.format("[%s %s] %s", LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")), logVariant, logStatement));
 	}
@@ -72,6 +74,7 @@ public class TigerLogs {
 	
 	public void debug(@NotNull String statement)
 	{
-		if (TigerGuard.isDebugMode()) log(LogType.DEBUG, String.format("%s | %s", Thread.currentThread().getStackTrace()[2].getClassName(), statement));
+		String callingPath = Thread.currentThread().getStackTrace()[2].getClassName();
+		if (TigerGuard.isDebugMode()) log(LogType.DEBUG, String.format("%s | %s", callingPath, statement));
 	}
 }
