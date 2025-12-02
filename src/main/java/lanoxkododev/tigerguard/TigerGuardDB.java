@@ -1499,7 +1499,7 @@ public class TigerGuardDB {
 			LevelRoleProgressionHandler(guild, member, memberLevel);
 			
 			//Finalize all logic
-			String statementNew = String.format("UPDATE %s%s SET xp = %s, level = %s, WHERE member = %s;", db, guildMesh, combinedXP, memberLevel, member.getIdLong());
+			String statementNew = String.format("UPDATE %s%s SET xp = %s, level = %s WHERE member = %s;", db, guildMesh, combinedXP, memberLevel, member.getIdLong());
 			performUpdate(statementNew, LogType.DATABASE_ERROR);
 			
 			//Create level-card after all things have been finalized.
@@ -1578,13 +1578,17 @@ public class TigerGuardDB {
 		{
 			List<Role> memberRoles = member.getRoles();
 			
-			lvlRoles.forEach(lvlRole -> {
-				if (memberRoles.contains(lvlRole))
+			int activeLevel = 1;
+			for (Role lvlRole : lvlRoles)
+			{
+				if (memberRoles.contains(lvlRole) && activeLevel != memberLevel)
 				{
 					logger.debug(String.format("Removing role `%s` (%s) from member %s", lvlRole.getName(), lvlRole.getIdLong(), member.getIdLong()));
 					guild.removeRoleFromMember(member, lvlRole).queue();
 				}
-			});
+				
+				activeLevel++;
+			}
 
 			logger.debug(String.format("Adding role `%s` (%s) to member", lvlRoles.get(memberLevel-1), lvlRoles.get(memberLevel-1).getIdLong()));
 			guild.addRoleToMember(member, lvlRoles.get(memberLevel-1)).queue();
