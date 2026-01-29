@@ -2,6 +2,7 @@ package lanoxkododev.tigerguard.messages;
 
 public enum ColorCodes {
 
+	BIRTHDAY(0xc70e89),		//Pink
 	INFO(0x134f5c), 		//Seaworld (Teal)
 	JOIN(0x18a00a),			//Green
 	FINISHED(0x00ff00),		//Lime

@@ -1010,7 +1010,7 @@ public class TigerGuardDB {
 	 */
 	public void firstInsertion(String statement)
 	{
-		performUpdate(statement, LogType.DATABASE_ERROR);
+		performUpdate("INSERT INTO " + db + statement, LogType.DATABASE_ERROR);
 	}
 
 	/**
@@ -1454,6 +1454,8 @@ public class TigerGuardDB {
 			String initialQuery = String.format("SELECT level, xp FROM %s%s WHERE member = %s", db, guildMesh, member.getIdLong());
 			ResultSet rs = performQuery(initialQuery);
 
+			boolean leveledUp = false;
+			
 			try
 			{
 				while (rs.next())
@@ -1478,6 +1480,7 @@ public class TigerGuardDB {
 				if (meetsLevelUp(combinedXP, levelExpCaps[memberLevel-1]))
 				{
 					memberLevel++;
+					leveledUp = true;
 					
 					if (memberLevel == (maxLevel-1))
 					{
@@ -1494,38 +1497,41 @@ public class TigerGuardDB {
 			}
 
 			Long levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
-
-			//Perform level-role removal and provisioning checks
-			LevelRoleProgressionHandler(guild, member, memberLevel);
-			
-			//Finalize all logic
-			String statementNew = String.format("UPDATE %s%s SET xp = %s, level = %s WHERE member = %s;", db, guildMesh, combinedXP, memberLevel, member.getIdLong());
-			performUpdate(statementNew, LogType.DATABASE_ERROR);
-			
-			//Create level-card after all things have been finalized.
-			try
-			{
-				msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRanklevelUpImage(guild, member, guild.getRoleById(levelRole).getName(), memberLevel, false), "rankCard.png"));
-			}
-			catch (Exception e)
-			{
-				logger.logErr(LogType.ERROR, "Failure generating rank card from updateRankXp method.", statementNew, e);
-			}
 			
 			//Where to send the level-up-card
-			if (voiceEvent != null) TigerGuard.TigerGuardInstance.getJDA().getVoiceChannelById(voiceEvent.getChannelLeft().getIdLong()).sendMessage(msgBuilder.build()).queue();
-			else
+			if (leveledUp)
 			{
-				TextChannel specifiedChannel = null;
+				//Perform level-role removal and provisioning checks
+				LevelRoleProgressionHandler(guild, member, memberLevel);
 				
-				if (checkIfValueExists("guildInfo", "LevelChannel", "guild", guild.getIdLong()))
-					specifiedChannel = guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong()));
-				else if (checkIfValueExists("guildInfo", "BotChannel", "guild", guild.getIdLong()))
-					specifiedChannel = guild.getTextChannelById(getGuildBotSpamChannel(guild.getIdLong()));
-				else if (messageEvent != null)
-					specifiedChannel = messageEvent.getChannel().asTextChannel();
+				//Finalize all logic
+				String statementNew = String.format("UPDATE %s%s SET xp = %s, level = %s WHERE member = %s;", db, guildMesh, combinedXP, memberLevel, member.getIdLong());
+				performUpdate(statementNew, LogType.DATABASE_ERROR);
 				
-				specifiedChannel.sendMessage(msgBuilder.build()).queue();
+				//Create level-card after all things have been finalized.
+				try
+				{
+					msgBuilder.addFiles(FileUpload.fromData(messageFactory.createRanklevelUpImage(guild, member, guild.getRoleById(levelRole).getName(), memberLevel, false), "rankCard.png"));
+				}
+				catch (Exception e)
+				{
+					logger.logErr(LogType.ERROR, "Failure generating rank card from updateRankXp method.", statementNew, e);
+				}
+				
+				if (voiceEvent != null) TigerGuard.TigerGuardInstance.getJDA().getVoiceChannelById(voiceEvent.getChannelLeft().getIdLong())
+					.sendMessage(msgBuilder.build()).queue();
+				else
+				{
+					TextChannel specifiedChannel = null;
+
+					if (checkIfValueExists("guildInfo", "LevelChannel", "guild",
+						guild.getIdLong())) specifiedChannel = guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong()));
+					else if (checkIfValueExists("guildInfo", "BotChannel", "guild",
+						guild.getIdLong())) specifiedChannel = guild.getTextChannelById(getGuildBotSpamChannel(guild.getIdLong()));
+					else if (messageEvent != null) specifiedChannel = messageEvent.getChannel().asTextChannel();
+
+					specifiedChannel.sendMessage(msgBuilder.build()).queue();
+				}
 			}
 		}
 	}
@@ -1583,14 +1589,12 @@ public class TigerGuardDB {
 			{
 				if (memberRoles.contains(lvlRole) && activeLevel != memberLevel)
 				{
-					logger.debug(String.format("Removing role `%s` (%s) from member %s", lvlRole.getName(), lvlRole.getIdLong(), member.getIdLong()));
 					guild.removeRoleFromMember(member, lvlRole).queue();
 				}
 				
 				activeLevel++;
 			}
 
-			logger.debug(String.format("Adding role `%s` (%s) to member", lvlRoles.get(memberLevel-1), lvlRoles.get(memberLevel-1).getIdLong()));
 			guild.addRoleToMember(member, lvlRoles.get(memberLevel-1)).queue();
 		}
 		else logger.debug(String.format("Member `%s` not found in server.", member.getIdLong()));

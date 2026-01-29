@@ -39,6 +39,21 @@ public class SelectEvents extends ListenerAdapter {
 
 		switch (event.getComponentId())
 		{
+			case "tg-birthday":
+			{
+				event.deferEdit().queue();
+				switch (selection)
+				{
+					case "tg-birthday-set":
+						hook.editOriginalEmbeds(embedder.simpleEmbed("What date is your birthday?", null, null, ColorCodes.TIGER_FUR, "Format: (mm/dd/yyyy)"));
+						break;
+					case "tg-birthday-unset":
+						break;
+					case "tg-birthday-view":
+						break;
+				}
+				break;
+			}
 			case "s1-tg-update-config":
 				switch (selection)
 				{

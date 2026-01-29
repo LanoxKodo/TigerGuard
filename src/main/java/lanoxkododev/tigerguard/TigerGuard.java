@@ -41,7 +41,7 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
  */
 public class TigerGuard {
 	
-	String version = "2025m12a";
+	String version = "2026m1a";
 	
 	TerminalListener terminalThread = new TerminalListener();
 	TigerLogs logger = new TigerLogs();
@@ -117,7 +117,7 @@ public class TigerGuard {
                 }
             });
 
-    		logger.log(LogType.INFO, "Initialization complete!");
+    		logger.log(LogType.INFO, String.format("Initialization complete, %s %s ready!", getName(), getVersion()));
     	}
 		else
 		{

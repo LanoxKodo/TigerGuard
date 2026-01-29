@@ -43,7 +43,7 @@ public class EmbedCreationThreader extends Thread {
 
 		if (!tigerGuardDB.checkRow("tempEmbedData", "guild", event.getGuild().getIdLong()))
 		{
-			tigerGuardDB.firstInsertion("INSERT INTO tigerguarddb.tempEmbedData (guild, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
+			tigerGuardDB.firstInsertion("tempEmbedData (guild, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
 		}
 
 		if (tigerGuardDB.countRows(event.getGuild().getIdLong() + "embeds") == 3 && !tigerGuardDB.getGuildPremiumStatus(event.getGuild().getIdLong()))

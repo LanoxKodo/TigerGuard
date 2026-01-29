@@ -170,6 +170,9 @@ public class TimingThread extends Thread {
 								tigerguardDB.insertUserIntoGuildXPTable(guild + "xp", member);
 							}
 
+							double amount = (calc <= 56) ? calc : 56;
+							tigerguardDB.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * amount), null, null);
+							/*
 							if (calc <= 56)
 							{
 								tigerguardDB.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * calc), null, null);
@@ -178,6 +181,7 @@ public class TimingThread extends Thread {
 							{
 								tigerguardDB.updateGuildRankXp(guildInstance, a, Math.round(15 * 56), null, null);
 							}
+							*/
 						}
 
 						tigerguardDB.basicDelete("voiceTracker", "member", member);

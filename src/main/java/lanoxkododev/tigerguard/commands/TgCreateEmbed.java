@@ -51,7 +51,7 @@ public class TgCreateEmbed implements TGCommand {
 
 		if (!tigerGuardDB.checkRow("tempEmbedData", "id", event.getGuild().getIdLong()))
 		{
-			tigerGuardDB.firstInsertion("INSERT INTO tigerguarddb.tempEmbedData (id, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
+			tigerGuardDB.firstInsertion("tempEmbedData (id, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
 		}
 
 		if (tigerGuardDB.countRows(event.getGuild().getIdLong() + "embeds") == 3 && !tigerGuardDB.getGuildPremiumStatus(event.getGuild().getIdLong()))

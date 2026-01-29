@@ -21,8 +21,10 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.Command.Option;
+import net.dv8tion.jda.api.interactions.commands.Command.Subcommand;
 import net.dv8tion.jda.api.interactions.commands.Command.Type;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 class CommandComparator implements Comparator<Command>
 {
@@ -63,8 +65,10 @@ public class CommandCenter extends ListenerAdapter {
 			if (discordCommand == null)
 			{
 				event.getJDA().upsertCommand(localCommand.getName(), localCommand.getDescription())
-					.addOptions(localCommand.getOptions())
+					.setContexts(localCommand.getContexts())
 					.setDefaultPermissions(localCommand.getDefaultPermission())
+					.addOptions(localCommand.getOptions())
+					.addSubcommands(localCommand.getSubcommands())
 					.queue(cmd -> logger.log(LogType.INFO, "Created command: " + cmd.getName()));
 			}
 			else
@@ -73,25 +77,14 @@ public class CommandCenter extends ListenerAdapter {
 				{
 					logger.log(LogType.INFO, "Details for command " + localCommand.getName() + " do not match between local and Discord's endpoint, updating...");
 					
-					if (localCommand.getOptions() == null)
-					{
-						event.getJDA().editCommandById(Type.SLASH, discordCommand.getIdLong())
-							.setName(localCommand.getName())
-							.setDescription(localCommand.getDescription())
-							.setContexts(localCommand.getContexts())
-							.setDefaultPermissions(localCommand.getDefaultPermission())
-							.queue();
-					}
-					else
-					{
-						event.getJDA().editCommandById(Type.SLASH, discordCommand.getIdLong())
-							.setName(localCommand.getName())
-							.setDescription(localCommand.getDescription())
-							.setContexts(localCommand.getContexts())
-							.setDefaultPermissions(localCommand.getDefaultPermission())
-							.addOptions(localCommand.getOptions())
-							.queue();
-					}
+					event.getJDA().editCommandById(Type.SLASH, discordCommand.getIdLong())
+						.setName(localCommand.getName())
+						.setDescription(localCommand.getDescription())
+						.setContexts(localCommand.getContexts())
+						.setDefaultPermissions(localCommand.getDefaultPermission())
+						.addOptions(localCommand.getOptions())
+						.addSubcommands(localCommand.getSubcommands())
+						.queue();
 				}
 			}
 		}
@@ -136,6 +129,7 @@ public class CommandCenter extends ListenerAdapter {
 	
 	private void registerCommands()
 	{
+		tigerCommands.add(new Birthday());
 		tigerCommands.add(new Info());
 		tigerCommands.add(new Pause(ac));
 		tigerCommands.add(new PingZeTiger());
@@ -149,6 +143,7 @@ public class CommandCenter extends ListenerAdapter {
 		tigerCommands.add(new Stop(ac));
 		tigerCommands.add(new TgCreateEmbed());
 		tigerCommands.add(new TgCreateReactionEmbed());
+		tigerCommands.add(new TGFeatures());
 		tigerCommands.add(new TgHelp());
 		tigerCommands.add(new TgUpdateConfig());
 		tigerCommands.add(new TgViewConfig());
@@ -180,6 +175,40 @@ public class CommandCenter extends ListenerAdapter {
 			if (!Objects.equals(dOpt.getDescription(), lOpt.getDescription())) return true;
 			if (dOpt.isRequired() != lOpt.isRequired()) return true;
 		}
+		
+		List<Subcommand> discordSubcommands = discordCommand.getSubcommands();
+		List<SubcommandData> localSubcommands = localCommand.getSubcommands();
+		if (discordSubcommands == null) discordSubcommands = Collections.emptyList();
+		if (localSubcommands == null) localSubcommands = Collections.emptyList();
+		if (discordSubcommands.size() != localSubcommands.size()) return true;
+
+		for (int i = 0; i < discordSubcommands.size(); i++)
+		{
+			Subcommand dSC = discordSubcommands.get(i);
+			SubcommandData lSC = localSubcommands.get(i);
+			
+			if (!Objects.equals(dSC.getName(), lSC.getName())) return true;
+			if (!Objects.equals(dSC.getDescription(), lSC.getName())) return true;
+			/*
+			List<Option> dSC_Opt = dSC.getOptions();
+			List<OptionData> lSC_Opt = lSC.getOptions();
+			if (dSC_Opt == null) dSC_Opt = Collections.emptyList();
+			if (lSC_Opt == null) lSC_Opt = Collections.emptyList();
+			if (dSC_Opt.size() != lSC_Opt.size()) return true;
+			
+			for (int z = 0; z < dSC_Opt.size(); z++)
+			{
+				Option dSC_Opt_i = dSC_Opt.get(i);
+				OptionData lSC_Opt_i = lSC_Opt.get(i);
+				
+				if (!dSC_Opt_i.getType().equals(lSC_Opt_i.getType())) return true;
+				if (!Objects.equals(dSC_Opt_i.getName(), lSC_Opt_i.getName())) return true;
+				if (!Objects.equals(dSC_Opt_i.getDescription(), lSC_Opt_i.getDescription())) return true;
+				if (dSC_Opt_i.isRequired() != lSC_Opt_i.isRequired()) return true;
+			}
+			*/
+		}
+		
 		return false;
 	}
 	

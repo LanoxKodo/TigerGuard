@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public interface TGCommand {
 
@@ -33,6 +34,11 @@ public interface TGCommand {
 	default DefaultMemberPermissions getDefaultPermission()
 	{
 		return DefaultMemberPermissions.ENABLED;
+	}
+	
+	default List<SubcommandData> getSubcommands()
+	{
+		return Collections.emptyList();
 	}
 
 	default List<OptionData> getOptions()
