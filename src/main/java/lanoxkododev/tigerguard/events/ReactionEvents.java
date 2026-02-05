@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import lanoxkododev.tigerguard.ThreadUtilities;
-import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
 import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
@@ -19,8 +18,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class ReactionEvents extends ListenerAdapter {
 
-	TigerGuard tigerGuard;
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 
@@ -34,15 +32,15 @@ public class ReactionEvents extends ListenerAdapter {
 			Guild guild = event.getGuild();
 			Long messageID = event.getMessageIdLong();
 			
-			if (tigerguardDB.checkForTable(guild.getIdLong() + "embeds"))
+			if (tgdb.checkForTable(guild.getIdLong() + "embeds"))
 			{
-				if (tigerguardDB.checkRow(guild.getIdLong() + "embeds", "message", messageID))
+				if (tgdb.checkRow(guild.getIdLong() + "embeds", "message", messageID))
 				{
 					reactionRoleResult(guild, member, event.getReaction().getEmoji().getFormatted(), messageID, "add");
 				}
 			}
 			
-			if (tigerguardDB.checkRow("colorRoles", "guild", guild.getIdLong()) && tigerguardDB.getValueLong("colorRoles", "embed", "guild", guild.getIdLong()).equals(messageID))
+			if (tgdb.checkRow("colorRoles", "guild", guild.getIdLong()) && tgdb.getValueLong("colorRoles", "embed", "guild", guild.getIdLong()).equals(messageID))
 			{
 				colorProcess(event, member, guild);
 			}
@@ -59,7 +57,7 @@ public class ReactionEvents extends ListenerAdapter {
 			Guild guild = event.getGuild();
 			Long messageID = event.getMessageIdLong();
 			
-			if (tigerguardDB.checkRow(guild.getIdLong() + "embeds", "message", messageID))
+			if (tgdb.checkRow(guild.getIdLong() + "embeds", "message", messageID))
 			{
 				reactionRoleResult(guild, member, event.getReaction().getEmoji().getFormatted(), messageID, "remove");
 			}
@@ -83,9 +81,9 @@ public class ReactionEvents extends ListenerAdapter {
 		String[][] dataParts = new String[1][];
 		Long guildID = guild.getIdLong();
 		
-		if (tigerguardDB.checkIfValueExists(guildID + "embeds", "body", "message", messageID))
+		if (tgdb.checkIfValueExists(guildID + "embeds", "body", "message", messageID))
 		{
-			dataParts[0] = tigerguardDB.getEmbedBodyData(guildID, messageID).split("\\s+");
+			dataParts[0] = tgdb.getEmbedBodyData(guildID, messageID).split("\\s+");
 			future.complete(searchData(dataParts[0], emoji));
 		}
 		
@@ -125,7 +123,7 @@ public class ReactionEvents extends ListenerAdapter {
 
 	private void colorProcess(MessageReactionAddEvent event, Member member, Guild guild)
 	{
-		ArrayList<Long> colorRoles = tigerguardDB.selectColorRoles(guild.getIdLong());
+		ArrayList<Long> colorRoles = tgdb.selectColorRoles(guild.getIdLong());
 
 		Long roleVal = 0L;
 		switch (event.getReaction().getEmoji().getName())

@@ -7,6 +7,7 @@ import java.util.List;
 import org.javatuples.Quartet;
 
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -16,7 +17,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 public class EmbedCreationThreader extends Thread {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	SlashCommandInteractionEvent event;
 	Guild guild;
 
@@ -36,17 +37,17 @@ public class EmbedCreationThreader extends Thread {
 	{
 		event.deferReply().queue();
 
-		if (!tigerGuardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
+		if (!tgdb.checkForTable(event.getGuild().getIdLong() + "embeds"))
 		{
-			tigerGuardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20) NOT NULL PRIMARY KEY, type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
+			tgdb.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20) NOT NULL PRIMARY KEY, type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
 		}
 
-		if (!tigerGuardDB.checkRow("tempEmbedData", "guild", event.getGuild().getIdLong()))
+		if (!tgdb.checkRow("tempEmbedData", "guild", event.getGuild().getIdLong()))
 		{
-			tigerGuardDB.firstInsertion("tempEmbedData (guild, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
+			tgdb.firstInsertion("tempEmbedData (guild, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
 		}
 
-		if (tigerGuardDB.countRows(event.getGuild().getIdLong() + "embeds") == 3 && !tigerGuardDB.getGuildPremiumStatus(event.getGuild().getIdLong()))
+		if (tgdb.countRows(event.getGuild().getIdLong() + "embeds") == 3 && (Boolean)tgdb.getValue(DB_Enums.PREMIUM, "guild", event.getGuild().getIdLong()))// !tigerGuardDB.getGuildPremiumStatus(event.getGuild().getIdLong()))
 		{
 			event.replyEmbeds(embedder.simpleEmbed("Pardon, this command is experiemental and partially restricted.", null, null, ColorCodes.UNABLE, "For non-donation servers, while this command is experimental, there is a limit of 3 customizable embeds.\nFor servers that support the bot this restrction is lifted.")).queue();
 		}
@@ -172,13 +173,13 @@ public class EmbedCreationThreader extends Thread {
 							+ "Note: Attempting to create another embed before confirming or canceling this one will result in this one being nullified!");
 
 						String name = event.getOption("name").getAsString();
-						if (tigerGuardDB.checkRow(guild.getIdLong() + "embeds", "name", name))
+						if (tgdb.checkRow(guild.getIdLong() + "embeds", "name", name))
 						{
 							boolean checkNameFinished = false;
 							int a = 1;
 							while (!checkNameFinished)
 							{
-								if (tigerGuardDB.checkRow(guild.getIdLong() + "embeds", "name", name + a))
+								if (tgdb.checkRow(guild.getIdLong() + "embeds", "name", name + a))
 								{
 									a++;
 								}
@@ -197,7 +198,7 @@ public class EmbedCreationThreader extends Thread {
 
 						event.getInteraction().getHook().sendMessageEmbeds(embed.build()).setActionRow(buttons).queue();
 
-						tigerGuardDB.setEmbedTempData(Quartet.with(name, event.getOption("title").getAsString(), color, event.getOption("data").getAsString()), event.getGuild().getIdLong());
+						tgdb.setEmbedTempData(Quartet.with(name, event.getOption("title").getAsString(), color, event.getOption("data").getAsString()), event.getGuild().getIdLong());
 					}
 					else
 					{

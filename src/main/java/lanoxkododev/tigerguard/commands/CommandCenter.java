@@ -144,6 +144,7 @@ public class CommandCenter extends ListenerAdapter {
 		tigerCommands.add(new TgCreateEmbed());
 		tigerCommands.add(new TgCreateReactionEmbed());
 		tigerCommands.add(new TGFeatures());
+		tigerCommands.add(new TGRoleManager());
 		tigerCommands.add(new TgHelp());
 		tigerCommands.add(new TgUpdateConfig());
 		tigerCommands.add(new TgViewConfig());

@@ -6,6 +6,7 @@ import lanoxkododev.tigerguard.ArrayUtilities;
 import lanoxkododev.tigerguard.PermissionThreader;
 import lanoxkododev.tigerguard.ThreadUtilities;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.ColorCodes;
@@ -23,7 +24,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class JoinLeaveEvents extends ListenerAdapter {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 
 	@Override
@@ -32,9 +33,9 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		Guild guild = event.getGuild();
 		Member member = event.getMember();
 
-		if (tigerguardDB.getGuildBotSpamChannel(guild.getIdLong()) != null)
+		if (tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()) != null)
 		{
-			TextChannel channel = guild.getTextChannelById(tigerguardDB.getGuildBotSpamChannel(guild.getIdLong()));
+			TextChannel channel = guild.getTextChannelById(tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()));
 
 			if (channel != null)
 			{
@@ -52,13 +53,12 @@ public class JoinLeaveEvents extends ListenerAdapter {
 			}
 		}
 
+		Long memberRole = tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong());
 		if (!member.getUser().isBot())
-		{
-			Long memberCheck = tigerguardDB.getGuildMemberRole(guild.getIdLong());
-			
-			if (memberCheck != null && guild.getRoleById(memberCheck) != null || guild.getRoleById(memberCheck).getIdLong() != 0)
+		{	
+			if (memberRole != null && guild.getRoleById(memberRole) != null || guild.getRoleById(memberRole).getIdLong() != 0)
 			{
-				guild.addRoleToMember(member, guild.getRoleById(memberCheck)).queue();
+				guild.addRoleToMember(member, guild.getRoleById(memberRole)).queue();
 			}
 
 			if (!ArrayUtilities.guildMemberCounter.contains(guild))
@@ -67,10 +67,9 @@ public class JoinLeaveEvents extends ListenerAdapter {
 				ThreadUtilities.createNewThread(_ -> updateMemberCountChannel(guild), _ -> logger.log(LogType.ERROR, "Issue involving guildMemberCounter arraylist."), Duration.ofSeconds(600), false, false);
 			}
 		}
-		else
+		else //This presumably could be removed, I don't think bots would need the member role. Pending later review
 		{
-			long memberRole = tigerguardDB.getGuildMemberRole(guild.getIdLong());
-			if (memberRole != 0)
+			if (memberRole != null)
 			{
 				try
 				{
@@ -90,16 +89,11 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		Guild guild = event.getGuild();
 		User user = event.getUser();
 
-		if (tigerguardDB.getGuildBotSpamChannel(guild.getIdLong()) != null)
+		if (tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()) != null)
 		{
-			TextChannel channel = guild.getTextChannelById(tigerguardDB.getGuildBotSpamChannel(guild.getIdLong()));
+			TextChannel channel = guild.getTextChannelById(tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()));
 
 			channel.sendMessageEmbeds(embedder.simpleEmbed(user.getName() + " has departed.", null, null, ColorCodes.LEAVE, null)).queue();
-		}
-		else
-		{
-			logger.log(LogType.WARNING, "Failure with JoinLeaveEvents.onGuildMemberRemove(). Regular botChannel statement partially worked.\nResults:"
-				+ user.getName() + " (" + user.getIdLong() + ") left from server " + guild.getIdLong());
 		}
 
 		if (!user.isBot())
@@ -118,7 +112,7 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		{
 			long memberCount = members.stream().filter(b -> !b.getUser().isBot()).count();
 
-			guild.getVoiceChannelById(tigerguardDB.getGuildSizeChannel(guild.getIdLong())).getManager().setName("Members " + memberCount).queue();
+			guild.getVoiceChannelById(tgdb.getValue(DB_Enums.GUILD_SIZE_CHAN, "guild", guild.getIdLong())).getManager().setName("Members " + memberCount).queue();
 			ArrayUtilities.guildMemberCounter.remove(guild);
 		});
 	}
@@ -128,14 +122,14 @@ public class JoinLeaveEvents extends ListenerAdapter {
 	{
 		logger.log(LogType.INFO, "Server added bot! Sever " + event.getGuild().getId() + ", " + event.getGuild().getName());
 
-		if (!tigerguardDB.checkRow("guildInfo", "guild", event.getGuild().getIdLong()))
+		if (!tgdb.checkRow("guildInfo", "guild", event.getGuild().getIdLong()))
 		{
-			tigerguardDB.newGuildEntry(event.getGuild().getIdLong());
+			tgdb.newGuildEntry(event.getGuild().getIdLong());
 		}
 
-		if (!tigerguardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
+		if (!tgdb.checkForTable(event.getGuild().getIdLong() + "embeds"))
 		{
-			tigerguardDB.createTable("CREATE TABLE tigerguard_db." + event.getGuild().getIdLong() +
+			tgdb.createTable("CREATE TABLE tigerguard_db." + event.getGuild().getIdLong() +
 				"embeds (name varchar(25), type varchar(10), id varchar(45), title varchar(200), color varchar(7), datas varchar(1800), descr varchar(200));");
 		}
 

@@ -19,7 +19,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 public class PromptRolesThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	EmbedBuilder embed = new EmbedBuilder();
 	TigerLogs logger = new TigerLogs();
@@ -305,7 +305,7 @@ public class PromptRolesThreader extends Thread {
 		msg.addReaction(Emoji.fromFormatted("🎉")).queue();
 		embed.clear();
 
-		if (tigerguardDB.checkRow("color_roles", "guild_id", guild.getIdLong()))
+		if (tgdb.checkRow("color_roles", "guild_id", guild.getIdLong()))
 		{
 			createColorSelector(event);
 		}

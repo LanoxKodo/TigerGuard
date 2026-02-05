@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.audio.AudioComplex;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.ColorCodes;
@@ -26,7 +27,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 public class ButtonClickEvents extends ListenerAdapter {
 
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	TigerLogs logger = new TigerLogs();
 	Pages pages = Pages.getInstance();
@@ -70,19 +71,19 @@ public class ButtonClickEvents extends ListenerAdapter {
 						event.replyEmbeds(embedder.simpleEmbed("Thank you for casting your selection of '**Yay**'", null, null, ColorCodes.CONFIRMATION,
 							"I will forward this to the poll box for when the results are ready to be read.\nIf you change your mind of your selection, you may switch it at any time while the poll is open!"))
 							.setEphemeral(true).queue();
-							tigerGuardDB.pollVoteUpdate(event.getMessageIdLong(), event.getMember().getIdLong(), 'y');
+						tgdb.pollVoteUpdate(event.getMessageIdLong(), event.getMember().getIdLong(), 'y');
 						break;
 					case "vote-abstain":
 						event.replyEmbeds(embedder.simpleEmbed("Thank you for casting your selection of '**Abstain**'", null, null, ColorCodes.CONFIRMATION,
 							"I will forward this to the poll box for when the results are ready to be read.\nIf you change your mind of your selection, you may switch it at any time while the poll is open!"))
 							.setEphemeral(true).queue();
-							tigerGuardDB.pollVoteUpdate(event.getMessageIdLong(), event.getMember().getIdLong(), 'a');
+						tgdb.pollVoteUpdate(event.getMessageIdLong(), event.getMember().getIdLong(), 'a');
 						break;
 					case "vote-nay":
 						event.replyEmbeds(embedder.simpleEmbed("Thank you for casting your selection of '**Nay**'", null, null, ColorCodes.CONFIRMATION,
 							"I will forward this to the poll box for when the results are ready to be read.\nIf you change your mind of your selection, you may switch it at any time while the poll is open!"))
 							.setEphemeral(true).queue();
-							tigerGuardDB.pollVoteUpdate(event.getMessageIdLong(), event.getMember().getIdLong(), 'n');
+						tgdb.pollVoteUpdate(event.getMessageIdLong(), event.getMember().getIdLong(), 'n');
 						break;
 					case "new":
 						event.editMessageEmbeds(embedder.simpleEmbed("How long should this poll last?", null, null, ColorCodes.POLL, "Select the time length type from the dropdown menu below.\nThe options range from 5 minutes up to 7 days."))
@@ -161,7 +162,7 @@ public class ButtonClickEvents extends ListenerAdapter {
 					case "select":
 						if (embedPageVal != 0)
 						{
-							tigerGuardDB.updateUserRankImage(member.getIdLong(), embedPageVal);
+							tgdb.updateUserRankImage(member.getIdLong(), embedPageVal);
 							event.replyEmbeds(embedder.simpleEmbed("Image selected", null, null, ColorCodes.FINISHED, "I have recorded your selection and marked it accordingly. Next time you or I run a rank event, this background will appear!")).setEphemeral(true).queue();
 						}
 						else
@@ -172,7 +173,7 @@ public class ButtonClickEvents extends ListenerAdapter {
 				}
 				break;
 			case "nsfw":
-				Long nsfwRoleID = Long.valueOf(tigerGuardDB.getGuildNSFWStatusRole(guild.getIdLong()));
+				Long nsfwRoleID = Long.valueOf(tgdb.getValue(DB_Enums.NSFW, "guild", guild.getIdLong()));
 
 				if (nsfwRoleID != null)
 				{
@@ -217,14 +218,14 @@ public class ButtonClickEvents extends ListenerAdapter {
 				{
 					case "confirm":
 						{
-							tigerGuardDB.setReactionRoleEmbed(guild.getIdLong(), "custom");
+							tgdb.setReactionRoleEmbed(guild.getIdLong(), "custom");
 							logger.debug("Message ID: " + event.getMessage().getIdLong());
 							
 							deleteMessage(event);
 							event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Confirmation accepted!", null, null, ColorCodes.FINISHED, "The embed has been saved and can be used now using the command flow:\n"
 								+ "**/tg-update-config** -> **Embed manager** -> **Print embed** -> *Name of embed*")).setEphemeral(true).queue();
 							
-							tigerGuardDB.deleteRow("tempEmbedData", "guild", guild.getIdLong());
+							tgdb.deleteRow("tempEmbedData", "guild", guild.getIdLong());
 						}
 						break;
 					case "cancel":
@@ -234,7 +235,7 @@ public class ButtonClickEvents extends ListenerAdapter {
 						//event.getMessage().delete().queue();
 						deleteMessage(event);
 						event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Cancelling request!", null, null, ColorCodes.FINISHED, "The embed has not been saved as requested.")).setEphemeral(true).queue();
-						tigerGuardDB.deleteRow("tempEmbedData", "guild", guild.getIdLong());
+						tgdb.deleteRow("tempEmbedData", "guild", guild.getIdLong());
 						break;
 				}
 				break;

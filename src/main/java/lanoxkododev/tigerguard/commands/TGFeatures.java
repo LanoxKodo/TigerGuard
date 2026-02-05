@@ -5,6 +5,7 @@ import java.util.List;
 
 import lanoxkododev.tigerguard.PermissionValidator;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -14,7 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 public class TGFeatures implements TGCommand {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	PermissionValidator permValidator = new PermissionValidator();
 	
 	@Override
@@ -42,7 +43,7 @@ public class TGFeatures implements TGCommand {
 	@Override
 	public void execute(SlashCommandInteractionEvent event)
 	{
-		if (permValidator.administrativeAccessElevated(event.getGuild(), event.getMember()))
+		if (permValidator.canAccess(event.getGuild(), event.getMember(), false))
 		{
 			String subcommand = event.getSubcommandName();
 			
@@ -60,11 +61,11 @@ public class TGFeatures implements TGCommand {
 				case "birthdays" -> {
 					boolean bool = event.getOption("boolean").getAsBoolean();
 					
-					tigerGuardDB.basicUpdate("guildFeatures", "birthdayFeature", bool, "guild", guildID);
+					tgdb.setValue(DB_Enums.BIRTHDAY_FEAT, bool, "guild", guildID);
 					
-					if (!tigerGuardDB.checkForTable(guildID + "bdays"))
+					if (!tgdb.checkForTable(guildID + "bdays"))
 					{
-						tigerGuardDB.createTable(guildID + "bdays (`member` VARCHAR(45) NOT NULL, `date` VARCHAR(10) NOT NULL, PRIMARY KEY (`member`));");
+						tgdb.createTable(guildID + "bdays (`member` VARCHAR(45) NOT NULL, `date` VARCHAR(10) NOT NULL, PRIMARY KEY (`member`));");
 					}
 					
 					event.replyEmbeds(embedder.simpleEmbed("Birthday features enabled", null, null, ColorCodes.FINISHED,

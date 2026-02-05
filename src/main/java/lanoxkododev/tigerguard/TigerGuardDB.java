@@ -44,6 +44,45 @@ public class TigerGuardDB {
 
 	static Connection connection;
 	final String db;
+	
+	public enum DB_Enums {
+		//Roles
+		ADMIN("adminRole", "guildInfo", Long.class),
+		STAFF("primaryStaffRole", "guildInfo", Long.class),
+		MOD("secondaryStaffRole", "guildInfo", Long.class),
+		ENTRANT("entrantRole", "guildInfo", Long.class),
+		MEMBER("memberRole", "guildInfo", Long.class),
+		NSFW("nsfwRole", "guildInfo", Long.class),
+		
+		//Channels and Categories
+		DYNAMIC_VC_CAT("dynamicVcCategory", "guildInfo", Long.class),
+		DYNAMIC_VC_CHAN("dynamicVcChannel", "guildInfo", Long.class),
+		MUSIC_CHAN("musicChannel", "guildInfo", Long.class),
+		LEVEL_CHAN("levelChannel", "guildInfo", Long.class),
+		RULE_CHAN("ruleChannel", "guildInfo", Long.class),
+		ANNOUNCEMENT_CHAN("announcementChannel", "guildInfo", Long.class),
+		BOT_CHAN("botSpamChannel", "guildInfo", Long.class), //This should be renamed eventually to avoid ambiguous meaning of purpose
+		GUILD_SIZE_CHAN("guildSizeChannel", "guildInfo", Long.class),
+
+		//Other
+		PREMIUM("premium", "guildInfo", Boolean.class),
+		BIRTHDAY_FEAT("birthdayFeature", "guildFeatures", Boolean.class);
+		
+		private final String column;
+		private final String table;
+		private final Class<?> type;
+		
+		DB_Enums(String column, String table, Class<?> type)
+		{
+			this.column = column;
+			this.table = table;
+			this.type = type;
+		}
+		
+		public String column() { return column; }
+		public String table() { return table; }
+		public Class<?> type() { return type; }
+	}
 
 	/*
 	 * ##################
@@ -60,14 +99,11 @@ public class TigerGuardDB {
 	
 	/**
 	 * Simple boolean returning method for if the first number provided or equal to or greater than the second number.
-	 * @param num1
-	 * @param num2
 	 * @return
 	 */
 	private boolean meetsLevelUp(int num1, int num2)
 	{
-		if (num1 >= num2) return true;
-		else return false;
+		return (num1 >= num2) ? true : false;
 	}
 	
 	/**
@@ -565,6 +601,46 @@ public class TigerGuardDB {
 		
 		return null;
 	}
+	
+	/**
+	 * Get the desired value from the database using the standardized DB_Enums setup
+	 * @param column - the DB_Enums type
+	 * @param whereCol - the WHERE column id
+	 * @param whereCond - the WHERE condition
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getValue(DB_Enums column, String whereCol, Object whereCond)
+	{
+		String statement = String.format("SELECT `%s` FROM %s%s WHERE `%s` = %s;", column.column(), db, column.table(), whereCol, whereCond);
+		
+		try
+		{
+			ResultSet rs = performQuery(statement);
+			
+			if (rs.next()) return (T) rs.getObject(1, column.type);
+			else return null;
+		}
+		catch (Exception e)
+		{
+			logger.logErr(LogType.DATABASE_ERROR, "Failure executing task", statement, e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Set a value in the database using the standardized DB_Enums setup
+	 * @param type - the DB_Enums type
+	 * @param value - the value to set into the field
+	 * @param whereCol - the WHERE column id
+	 * @param whereCond - the WHERE condition
+	 */
+	public void setValue(DB_Enums type, Object value, String whereCol, Object whereCond)
+	{
+		String statement = String.format("UPDATE %s%s SET `%s` = %s WHERE `%s` = %s;", db, type.table(), type.column(), value, whereCol, whereCond);
+		performUpdate(statement, LogType.DATABASE_ERROR);
+	}
 
 	/**
 	 * Get the channel the bot should message to for announcement-like events.
@@ -579,158 +655,11 @@ public class TigerGuardDB {
 		if (channel != null) return channel;
 		else
 		{
-			Long botChannel = getGuildBotSpamChannel(guild);
+			Long botChannel = getValue(DB_Enums.BOT_CHAN, "guild", guild);
 
 			if (botChannel != null) return botChannel;
 			else return null;
 		}
-	}
-
-
-	/**
-	 * The Guild's premium status
-	 * <br>NOTE: Bot currently does not utilize this feature, this is a placeholder should I open the bot
-	 * 		 up for paid features and such, for now nothing besides debug features use this, if at all.
-	 */
-	public boolean getGuildPremiumStatus(Long guild)
-	{
-		return getValueBoolean("guildInfo", "premium", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Admin role. TODO Admin role is not really implemented as the usage of this lines up with what the primary Staff role desigination does; thus all references to this designation in general should be removed eventually.
-	 */
-	public Long getGuildAdminRole(Long guild)
-	{
-		return getValueLong("guildInfo", "adminRole", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Admin role.
-	 */
-	public void setGuildAdminRole(Long guild, Long role)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET adminRole = " + role + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined Primary Staff role.
-	 */
-	public Long getGuildStaffRole(Long guild)
-	{
-		return getValueLong("guildInfo", "primaryStaffRole", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Primary Staff role.
-	 */
-	public void setGuildStaffRole(Long guild, Long role)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET primaryStaffRole = " + role + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined Secondary Staff role.
-	 */
-	public Long getGuildSupportingStaffRole(Long guild)
-	{
-		return getValueLong("guildInfo", "secondaryStaffRole", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Secondary Staff role.
-	 */
-	public void setGuildSupportingStaffRole(Long guild, Long role)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET secondaryStaffRole = " + role + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined CustomVC category.
-	 */
-	public Long getGuildCustomvcCategory(Long guild)
-	{
-		return getValueLong("guildInfo", "dynamicVcCategory", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined CustomVC category.
-	 */
-	public void setGuildCustomvcCategory(Long guild, Long category)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET dynamicVcCategory = " + category + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined CustomVC voice channel.
-	 */
-	public Long getGuildCustomvcChannel(Long guild)
-	{
-		return getValueLong("guildInfo", "dynamicVcChannel", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined CustomVC voice channel.
-	 */
-	public void setGuildCustomvcChannel(Long guild, Long channel)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET dynamicVcChannel = " + channel + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined Music text channel.
-	 */
-	public Long getGuildMusicChannel(Long guild)
-	{
-		return getValueLong("guildInfo", "musicChannel", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Music text channel.
-	 */
-	public void setGuildMusicChannel(Long guild, Long channel)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET musicChannel = " + channel + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined Member role.
-	 */
-	public Long getGuildMemberRole(Long guild)
-	{
-		return getValueLong("guildInfo", "memberRole", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Member role.
-	 */
-	public void setGuildMemberRole(Long guild, Long input)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET memberRole = " + input + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined NSFW role.
-	 */
-	public Long getGuildNSFWStatusRole(Long guild)
-	{
-		return getValueLong("guildInfo", "nsfwRole", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined NSFW role.
-	 */
-	public void setGuildNSFWStatusRole(Long guild, Long input)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET nsfwRole = " + input + " WHERE guild = " + guild;
-		performUpdate(statement, LogType.DATABASE_ERROR);
 	}
 
 	/**
@@ -843,34 +772,6 @@ public class TigerGuardDB {
 	}
 
 	/*
-	 * The Guild's defined Testing and/or Bot text channel.
-	 */
-	public Long getGuildBotSpamChannel(Long guild)
-	{
-		return getValueLong("guildInfo", "botSpamChannel", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Testing and/or Bot text channel.
-	 */
-	public void setGuildBotSpamChannel(Long guild, Long channel)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET botSpamChannel = " + channel + " WHERE guild = " + guild + ";";
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	public Long getGuildLevelChannel(Long guild)
-	{
-		return getValueLong("guildInfo", "levelChannel", "guild", guild);
-	}
-
-	public void setGuildLevelChannel(Long guild, Long channel)
-	{
-		String statement = "UPDATE " + db + "guildInfo SET levelChannel = " + channel + " WHERE guild = " + guild + ";";
-		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	/*
 	 * The Guild's AudioManger Live Music message.
 	 */
 	public Long getGuildLiveMusicMessage(Long guild)
@@ -884,22 +785,6 @@ public class TigerGuardDB {
 	public void setGuildLiveMusicMessage(Long guild, Long message)
 	{
 		performUpdate("UPDATE " + db + "guildInfo SET musicMessage = " + message + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
-	}
-
-	/*
-	 * The Guild's defined Rules text channel.
-	 */
-	public Long getGuildRuleChannel(Long guild)
-	{
-		return getValueLong("guildInfo", "ruleChannel", "guild", guild);
-	}
-
-	/*
-	 * The Guild's defined Rules text channel.
-	 */
-	public void setGuildRuleChannel(Long guild, Long channel)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET ruleChannel = " + channel + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
 	}
 
 	public void setGuildKnownLevelUpRoleCount(Long guild, Integer number)
@@ -940,16 +825,6 @@ public class TigerGuardDB {
 	public void setGuildColorRolesEntry(String statement)
 	{
 		performUpdate(statement, LogType.DATABASE_ERROR);
-	}
-
-	public void setGuildSizeChannel(Long guild, Long input)
-	{
-		performUpdate("UPDATE " + db + "guildInfo SET serverSizeChannel = " + input + " WHERE guild = " + guild + ";", LogType.DATABASE_ERROR);
-	}
-
-	public Long getGuildSizeChannel(Long guild)
-	{
-		return getValueLong("guildInfo", "guildSizeChannel", "guild", guild);
 	}
 
 	/*
@@ -1295,9 +1170,9 @@ public class TigerGuardDB {
 		{
 			levelRole = getGuildLevelRoleFromGuild(guild.getIdLong(), member.getIdLong(), memberLevel);
 		}
-		else if (guild.getRoleById(getGuildMemberRole(guild.getIdLong())).getName() != null)
+		else if (guild.getRoleById(getValue(DB_Enums.MEMBER, "guild", guild.getIdLong())).getName() != null)
 		{
-			levelRole = guild.getRoleById(getGuildMemberRole(guild.getIdLong())).getIdLong();
+			levelRole = guild.getRoleById(getValue(DB_Enums.MEMBER, "guild", guild.getIdLong())).getIdLong();
 		}
 
 		//If memberlevel is less than max level
@@ -1525,9 +1400,9 @@ public class TigerGuardDB {
 					TextChannel specifiedChannel = null;
 
 					if (checkIfValueExists("guildInfo", "LevelChannel", "guild",
-						guild.getIdLong())) specifiedChannel = guild.getTextChannelById(getGuildLevelChannel(guild.getIdLong()));
+						guild.getIdLong())) specifiedChannel = guild.getTextChannelById(getValue(DB_Enums.LEVEL_CHAN, "guild", guild.getIdLong()));
 					else if (checkIfValueExists("guildInfo", "BotChannel", "guild",
-						guild.getIdLong())) specifiedChannel = guild.getTextChannelById(getGuildBotSpamChannel(guild.getIdLong()));
+						guild.getIdLong())) specifiedChannel = guild.getTextChannelById(getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()));
 					else if (messageEvent != null) specifiedChannel = messageEvent.getChannel().asTextChannel();
 
 					specifiedChannel.sendMessage(msgBuilder.build()).queue();

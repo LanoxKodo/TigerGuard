@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 public class LevelRoleDeleteThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	ButtonInteractionEvent event;
 	int knownLevelRoles;
@@ -24,7 +24,7 @@ public class LevelRoleDeleteThreader extends Thread {
 	{
 		event = inputEvent;
 		guild = inputGuild;
-		knownLevelRoles = tigerguardDB.getGuildKnownLevelUpRoleCount(guild.getIdLong());
+		knownLevelRoles = tgdb.getGuildKnownLevelUpRoleCount(guild.getIdLong());
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class LevelRoleDeleteThreader extends Thread {
 
 			for (int a = knownLevelRoles; a >= 1; a--)
 			{
-				Long roleIdCheck = tigerguardDB.getGuildSingularLevelUpRole(guild.getIdLong(), ("lvlRole"+a));
+				Long roleIdCheck = tgdb.getGuildSingularLevelUpRole(guild.getIdLong(), ("lvlRole"+a));
 
 				if (roleIdCheck != null)
 				{
@@ -74,7 +74,7 @@ public class LevelRoleDeleteThreader extends Thread {
 
 				try
 				{
-					tigerguardDB.deleteColumn("ALTER TABLE tigerguarddb." + guild.getIdLong() + "lvlroles DROP COLUMN lvlRole" + a + ";");
+					tgdb.deleteColumn("ALTER TABLE tigerguarddb." + guild.getIdLong() + "lvlroles DROP COLUMN lvlRole" + a + ";");
 				}
 				catch (Exception e)
 				{
@@ -82,7 +82,7 @@ public class LevelRoleDeleteThreader extends Thread {
 				}
 			}
 
-			tigerguardDB.setGuildKnownLevelUpRoleCount(guild.getIdLong(), 0);
+			tgdb.setGuildKnownLevelUpRoleCount(guild.getIdLong(), 0);
 
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("evel roles have been deleted", null, null, ColorCodes.FINISHED,
 				"The level roles have been deleted as requested, please verify in your role section that they have been. If they are still present please report the bug on my support server!\n\n" +

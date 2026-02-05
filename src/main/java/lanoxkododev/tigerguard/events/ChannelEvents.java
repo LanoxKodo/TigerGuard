@@ -5,6 +5,7 @@ import java.util.Random;
 
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -19,7 +20,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class ChannelEvents extends ListenerAdapter {
 
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 
 	@Override
@@ -30,7 +31,7 @@ public class ChannelEvents extends ListenerAdapter {
 
 	private void deleteVC(AudioChannelUnion vc)
 	{
-		if (vc.getIdLong() == tigerGuardDB.getGuildCustomvcChannel(vc.getGuild().getIdLong()))
+		if (vc.getIdLong() == (Long)tgdb.getValue(DB_Enums.DYNAMIC_VC_CHAN, "guild", vc.getGuild().getIdLong()))
 		{
 			logger.log(LogType.WARNING, "Bot tried to delete customVC channel for guild " + vc.getGuild().getIdLong() + ", denying deletion.");
 		}
@@ -47,8 +48,8 @@ public class ChannelEvents extends ListenerAdapter {
 		{
 			Guild guild = event.getGuild();
 
-			Long guildCustomvcCategory = tigerGuardDB.getGuildCustomvcCategory(guild.getIdLong());
-			Long guildCustomvcChannel = tigerGuardDB.getGuildCustomvcChannel(guild.getIdLong());
+			Long guildCustomvcCategory = tgdb.getValue(DB_Enums.DYNAMIC_VC_CAT, "guild", guild.getIdLong());
+			Long guildCustomvcChannel = tgdb.getValue(DB_Enums.DYNAMIC_VC_CHAN, "guild", guild.getIdLong());
 
 			if (guildCustomvcChannel != 0 || guildCustomvcChannel != null)
 			{
@@ -62,9 +63,9 @@ public class ChannelEvents extends ListenerAdapter {
 					}
 					else
 					{
-						if (tigerGuardDB.checkRow("levelRoles", "guild", guild.getIdLong()))
+						if (tgdb.checkRow("levelRoles", "guild", guild.getIdLong()))
 						{
-							tigerGuardDB.voiceStatusBegin(event.getMember().getIdLong(), guild.getIdLong());
+							tgdb.voiceStatusBegin(event.getMember().getIdLong(), guild.getIdLong());
 						}
 					}
 				}
@@ -89,7 +90,7 @@ public class ChannelEvents extends ListenerAdapter {
 							SelfUser bot = TigerGuard.getTigerGuard().getSelf();
 							embed.setColor(0x730099);
 							embed.setAuthor("║ Leaving channel due to empty queue or due to being last one in session.\n║Destroying audio playlist to start a fresh one next time I am called.", null, bot.getEffectiveAvatarUrl());
-							guild.getTextChannelById(tigerGuardDB.getGuildMusicChannel(guild.getIdLong())).sendMessageEmbeds(embed.build()).queue();
+							guild.getTextChannelById(tgdb.getValue(DB_Enums.MUSIC_CHAN, "guild", guild.getIdLong())).sendMessageEmbeds(embed.build()).queue();
 							guild.getJDA().getDirectAudioController().disconnect(guild);
 						}
 					}
@@ -114,7 +115,7 @@ public class ChannelEvents extends ListenerAdapter {
 	 */
 	private void totalTimeInVC(GuildVoiceUpdateEvent event, Member member)
 	{
-		long timeBegan = tigerGuardDB.voiceStatusEnd(member.getIdLong());
+		long timeBegan = tgdb.voiceStatusEnd(member.getIdLong());
 
 		if (timeBegan != 0)
 		{
@@ -123,18 +124,18 @@ public class ChannelEvents extends ListenerAdapter {
 
 			if (calc >= 1)
 			{
-				if (!tigerGuardDB.checkRow(event.getGuild().getIdLong() + "xp", "member", member.getIdLong()))
+				if (!tgdb.checkRow(event.getGuild().getIdLong() + "xp", "member", member.getIdLong()))
 				{
-					tigerGuardDB.insertUserIntoGuildXPTable(event.getGuild().getIdLong() + "xp", member.getIdLong());
+					tgdb.insertUserIntoGuildXPTable(event.getGuild().getIdLong() + "xp", member.getIdLong());
 				}
 
 				if (calc <= 56)
 				{
-					tigerGuardDB.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * calc), null, event);
+					tgdb.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * calc), null, event);
 				}
 				else
 				{
-					tigerGuardDB.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * 56), null, event);
+					tgdb.updateGuildRankXp(event.getGuild(), member, (int)Math.round(15 * 56), null, event);
 				}
 			}
 		}
@@ -148,12 +149,12 @@ public class ChannelEvents extends ListenerAdapter {
 		Guild guild = event.getGuild();
 		Member member = event.getMember();
 
-		guild.getCategoryById(tigerGuardDB.getGuildCustomvcCategory(guild.getIdLong())).createVoiceChannel(names[rand])
+		guild.getCategoryById(tgdb.getValue(DB_Enums.DYNAMIC_VC_CAT, "guild", guild.getIdLong())).createVoiceChannel(names[rand])
 			.addRolePermissionOverride(guild.getPublicRole().getIdLong(), Permission.VOICE_CONNECT.getRawValue(), 0L).queue(channel ->
 				guild.moveVoiceMember(member, guild.getVoiceChannelById(channel.getIdLong())).queue());
 				if (!member.getUser().isBot())
 				{
-					tigerGuardDB.voiceStatusBegin(member.getIdLong(), guild.getIdLong());
+					tgdb.voiceStatusBegin(member.getIdLong(), guild.getIdLong());
 				}
 	}
 }

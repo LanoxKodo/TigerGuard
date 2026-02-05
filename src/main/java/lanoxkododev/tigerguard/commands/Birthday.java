@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.Member;
@@ -21,7 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 public class Birthday implements TGCommand {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	
 	@Override
 	public String getName()
@@ -53,7 +54,7 @@ public class Birthday implements TGCommand {
 	{
 		String table = event.getGuild().getIdLong() + "bdays";
 		
-		if (!tigerGuardDB.getValueBoolean("guildFeatures", "birthdayFeature", "guild", event.getGuild().getIdLong()))
+		if (!(Boolean)tgdb.getValue(DB_Enums.BIRTHDAY_FEAT, "guild", event.getGuild().getIdLong()))
 		{
 			event.replyEmbeds(embedder.simpleEmbed("Birthday feature set not enabled", null, null, ColorCodes.UNABLE,
 				"This server has not enabled the usage of the birthday feature set. This can be enabled by this servers' administrator(s)."))
@@ -93,11 +94,11 @@ public class Birthday implements TGCommand {
 			
 			//String date = LocalDate.parse(input, inputFormatter).toString();
 			
-			if (tigerGuardDB.checkRow(table, "member", event.getMember().getIdLong()))
+			if (tgdb.checkRow(table, "member", event.getMember().getIdLong()))
 			{
-				tigerGuardDB.basicUpdate(table, "date", date, "member", event.getMember().getIdLong());
+				tgdb.basicUpdate(table, "date", date, "member", event.getMember().getIdLong());
 			}
-			else tigerGuardDB.firstInsertion(table + " (member, date) VALUES (" + event.getMember().getIdLong() + ", '" + date + "')");
+			else tgdb.firstInsertion(table + " (member, date) VALUES (" + event.getMember().getIdLong() + ", '" + date + "')");
 			
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Birthday set", null, null, ColorCodes.FINISHED,
 				"Your birthday has been set and may now be used with the other birthday subcommands!")).queue();
@@ -117,9 +118,9 @@ public class Birthday implements TGCommand {
 		event.deferReply().setEphemeral(true).queue();
 		Long memberID = event.getMember().getIdLong();
 		
-		if (tigerGuardDB.checkRow(table, "member", memberID))
+		if (tgdb.checkRow(table, "member", memberID))
 		{
-			tigerGuardDB.deleteRow(table, "member", memberID);
+			tgdb.deleteRow(table, "member", memberID);
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Birthday removed", null, null, ColorCodes.CONFIRMATION,
 				"As requested, I have removed your birthday from my resources.")).queue();
 		}
@@ -152,9 +153,9 @@ public class Birthday implements TGCommand {
 		{
 			if (referencedMember != event.getGuild().getMember(TigerGuard.getTigerGuard().getSelf()))
 			{
-				if (tigerGuardDB.checkRow(table, "member", referencedMember.getIdLong()))
+				if (tgdb.checkRow(table, "member", referencedMember.getIdLong()))
 				{
-					String memberDate = tigerGuardDB.getValueString(table, "date", "member", referencedMember.getIdLong());
+					String memberDate = tgdb.getValueString(table, "date", "member", referencedMember.getIdLong());
 					event.getHook().sendMessageEmbeds(embedder.simpleEmbed(null, null, null, ColorCodes.BIRTHDAY, referencedMember.getAsMention() + "'s"
 						+ " next birthday is in `" + calculateRemainingDays(memberDate) + "` days :birthday:")).queue();
 				}

@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 
 public class LevelRoleAdderThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	ModalInteractionEvent event;
 	int roleAmount;
@@ -37,19 +37,19 @@ public class LevelRoleAdderThreader extends Thread {
 
 	private void createLevelUpRoles()
 	{
-		boolean xpTableCheck = tigerguardDB.checkForTable(guild.getIdLong() + "xp");
+		boolean xpTableCheck = tgdb.checkForTable(guild.getIdLong() + "xp");
 
 		if (!xpTableCheck)
 		{
-			tigerguardDB.createGuildXpTable(event.getGuild());
+			tgdb.createGuildXpTable(event.getGuild());
 		}
 
 		String statementBase = "UPDATE tigerguarddb.levelRoles SET ";
 		String statementAdd = "";
 
-		if (!tigerguardDB.checkRow("levelRoles", "guild", guild.getIdLong()))
+		if (!tgdb.checkRow("levelRoles", "guild", guild.getIdLong()))
 		{
-			tigerguardDB.insertGuildIntoLevelRoleTable(guild.getIdLong());
+			tgdb.insertGuildIntoLevelRoleTable(guild.getIdLong());
 		}
 
 		for (int a = 1 + knownLevelRoles; a <= roleAmount + knownLevelRoles; a++)
@@ -93,7 +93,7 @@ public class LevelRoleAdderThreader extends Thread {
 		//Try to update the table and then fill it with the created data, then pause after first step to allow time to properly account for delays if they occur.
 		try
 		{
-			tigerguardDB.setGuildKnownLevelUpRoleCount(guild.getIdLong(), knownLevelRoles+roleAmount);
+			tgdb.setGuildKnownLevelUpRoleCount(guild.getIdLong(), knownLevelRoles+roleAmount);
 			Thread.sleep(3000);
 		}
 		catch (Exception e)
@@ -103,7 +103,7 @@ public class LevelRoleAdderThreader extends Thread {
 
 		try
 		{
-			tigerguardDB.setGuildLevelUpRoles(guild.getIdLong(), statementBase+statementAdd);
+			tgdb.setGuildLevelUpRoles(guild.getIdLong(), statementBase+statementAdd);
 			Thread.sleep(3000);
 		}
 		catch (Exception e)

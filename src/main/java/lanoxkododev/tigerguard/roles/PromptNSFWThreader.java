@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
@@ -19,7 +20,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 
 public class PromptNSFWThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	TigerLogs logger = new TigerLogs();
 	StringSelectInteractionEvent event;
@@ -48,9 +49,10 @@ public class PromptNSFWThreader extends Thread {
 		button.add(Button.primary("nsfw-provision", "Yea, provide me NSFW Access").withEmoji(Emoji.fromFormatted("<:18:1095600870441357383>")));
 		button.add(Button.secondary("nsfw-deprovision", "Remove NSFW Access").withEmoji(Emoji.fromFormatted("🧽")));
 
-		Long nsfwRole = tigerguardDB.getGuildNSFWStatusRole(event.getGuild().getIdLong());
-		Long staffRole = tigerguardDB.getGuildStaffRole(event.getGuild().getIdLong());
-		Long suppStaffRole = tigerguardDB.getGuildSupportingStaffRole(event.getGuild().getIdLong());
+		Long guildID = event.getGuild().getIdLong();
+		Long nsfwRole = tgdb.getValue(DB_Enums.NSFW, "guild", guildID);
+		Long staffRole = tgdb.getValue(DB_Enums.STAFF, "guild", guildID);
+		Long suppStaffRole = tgdb.getValue(DB_Enums.MOD, "guild", guildID);
 
 		if (nsfwRole == 0)
 		{

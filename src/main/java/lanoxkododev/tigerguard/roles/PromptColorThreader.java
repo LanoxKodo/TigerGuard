@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 public class PromptColorThreader extends Thread {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	StringSelectInteractionEvent event;
 	ArrayList<String[]>colorSpecs;
@@ -45,7 +45,7 @@ public class PromptColorThreader extends Thread {
 		MessageChannel channel = event.getChannel();
 		InputStream icon = getClass().getResourceAsStream("/assets/misc/rainbow.png");
 
-		ArrayList<Long> roleList = tigerguardDB.selectColorRoles(guild.getIdLong());
+		ArrayList<Long> roleList = tgdb.selectColorRoles(guild.getIdLong());
 
 		String fillStatementBase = "UPDATE tigerguarddb.colorRoles SET";
 		String fillStatementAdd = "";
@@ -73,7 +73,7 @@ public class PromptColorThreader extends Thread {
 				}
 
 				try {
-					tigerguardDB.setGuildColorRolesEntry(fillStatementBase+fillStatementAdd);
+					tgdb.setGuildColorRolesEntry(fillStatementBase+fillStatementAdd);
 				} catch (Exception e) {
 					logger.logErr(LogType.ERROR, "Failure attempting to access database to set color values", fillStatementBase+fillStatementAdd, e);
 				}
@@ -89,9 +89,9 @@ public class PromptColorThreader extends Thread {
 		channel.sendMessageEmbeds(embedder.colorEmbed(Triplet.with("╔═════════╗\n        𝘾𝙊𝙇𝙊𝙍𝙎\n╚═════════╝", ColorCodes.TIGER_FUR.value.toString(),
 			"**Care for a color change to your name?**"), roleList, emojis)).addFiles(FileUpload.fromData(icon, "rainbow.png")).queue(a -> {
 
-				if (!tigerguardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
+				if (!tgdb.checkForTable(event.getGuild().getIdLong() + "embeds"))
 				{
-					tigerguardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
+					tgdb.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
 				}
 
 				for (String emojiItem : emojis)
@@ -99,7 +99,7 @@ public class PromptColorThreader extends Thread {
 					a.addReaction(Emoji.fromFormatted(emojiItem)).queue();
 				}
 
-			tigerguardDB.basicUpdate("colorRoles", "embed", a.getIdLong(), "guild", guild.getIdLong());
+			tgdb.basicUpdate("colorRoles", "embed", a.getIdLong(), "guild", guild.getIdLong());
 		});
 	}
 }

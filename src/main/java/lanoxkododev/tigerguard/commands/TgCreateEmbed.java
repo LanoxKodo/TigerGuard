@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -13,7 +14,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 public class TgCreateEmbed implements TGCommand {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 
 	@Override
 	public String getName()
@@ -44,17 +45,17 @@ public class TgCreateEmbed implements TGCommand {
 	{
 		event.deferReply().queue();
 
-		if (!tigerGuardDB.checkForTable(event.getGuild().getIdLong() + "embeds"))
+		if (!tgdb.checkForTable(event.getGuild().getIdLong() + "embeds"))
 		{
-			tigerGuardDB.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
+			tgdb.createTable(event.getGuild().getIdLong() + "embeds (name varchar(20), type varchar(10), id varchar(45), title varchar(100), color varchar(7), body varchar(1900));");
 		}
 
-		if (!tigerGuardDB.checkRow("tempEmbedData", "id", event.getGuild().getIdLong()))
+		if (!tgdb.checkRow("tempEmbedData", "id", event.getGuild().getIdLong()))
 		{
-			tigerGuardDB.firstInsertion("tempEmbedData (id, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
+			tgdb.firstInsertion("tempEmbedData (id, name, title, color, body) VALUES (" + event.getGuild().getIdLong() + ", null, null, null, null);");
 		}
 
-		if (tigerGuardDB.countRows(event.getGuild().getIdLong() + "embeds") == 3 && !tigerGuardDB.getGuildPremiumStatus(event.getGuild().getIdLong()))
+		if (tgdb.countRows(event.getGuild().getIdLong() + "embeds") == 3 && !(Boolean)tgdb.getValue(DB_Enums.PREMIUM, "guild", event.getGuild().getIdLong()))
 		{
 			event.replyEmbeds(embedder.simpleEmbed("Pardon, this command is experiemental and partially restricted.", null, null, ColorCodes.UNABLE, "For non-donation servers, while this command is experimental, there is a limit of 3 customizable embeds.\nFor servers that support the bot this restrction is lifted.")).queue();
 		}
@@ -90,7 +91,7 @@ public class TgCreateEmbed implements TGCommand {
 				title = event.getOption("title").getAsString();
 			}
 
-			tigerGuardDB.submitEmbed(event.getGuild().getIdLong(), event.getOption("embed_name").getAsString(), "regular", color, title, body);
+			tgdb.submitEmbed(event.getGuild().getIdLong(), event.getOption("embed_name").getAsString(), "regular", color, title, body);
 
 			event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Test - completed", null, null, ColorCodes.FINISHED, "Check the DB for QA")).queue();
 		}

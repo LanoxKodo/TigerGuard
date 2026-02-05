@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 public class EmbedPrinterThreader extends Thread {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	StringSelectInteractionEvent event;
 	String input;
 
@@ -30,7 +30,7 @@ public class EmbedPrinterThreader extends Thread {
 
 	private void review()
 	{
-		Quartet<String, String, String, String> embedData = tigerGuardDB.getEmbedData(input, event.getGuild().getIdLong());
+		Quartet<String, String, String, String> embedData = tgdb.getEmbedData(input, event.getGuild().getIdLong());
 
 		System.out.println("EmbedPrinterThreadder Debug :: Type=" +
 				embedData.getValue0() + " | Title=" +
@@ -102,7 +102,7 @@ public class EmbedPrinterThreader extends Thread {
 				a.addReaction(Emoji.fromFormatted(emojiItem)).queue();
 			}
 
-			tigerGuardDB.setEmbedId(event.getGuild().getIdLong(), "embeds", a.getIdLong(), input);
+			tgdb.setEmbedId(event.getGuild().getIdLong(), "embeds", a.getIdLong(), input);
 		});
 	}
 }

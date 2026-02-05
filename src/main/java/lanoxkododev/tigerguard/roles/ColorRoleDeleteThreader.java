@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 public class ColorRoleDeleteThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	ButtonInteractionEvent event;
 	ArrayList<String[]>colorSpecs;
@@ -37,7 +37,7 @@ public class ColorRoleDeleteThreader extends Thread {
 	{
 		EmbedMessageFactory embedder = new EmbedMessageFactory();
 
-		if (!tigerguardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
+		if (!tgdb.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 		{
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("No roles to delete", null, null, ColorCodes.MEH_NOTICE,
 				"I do not seem to see any color roles that need to be deleted. If this is an error then please inform me on my support server" +
@@ -51,7 +51,7 @@ public class ColorRoleDeleteThreader extends Thread {
 
 			for (int a = 0; a < colorSpecs.get(0).length; a++)
 			{
-				Long roleIdCheck = tigerguardDB.getSingularRole("colorRoles", "color" + (a+1), guild.getIdLong());
+				Long roleIdCheck = tgdb.getSingularRole("colorRoles", "color" + (a+1), guild.getIdLong());
 
 				if (roleIdCheck != null)
 				{
@@ -74,7 +74,7 @@ public class ColorRoleDeleteThreader extends Thread {
 				}
 			}
 
-			tigerguardDB.deleteRow("colorRoles", "guild", guild.getIdLong());
+			tgdb.deleteRow("colorRoles", "guild", guild.getIdLong());
 
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("Color roles have been deleted", null, null, ColorCodes.FINISHED,
 				"The color roles have been deleted as requested, please verify in your role section that they have been. If they are still present please report this bug on my support server!" +

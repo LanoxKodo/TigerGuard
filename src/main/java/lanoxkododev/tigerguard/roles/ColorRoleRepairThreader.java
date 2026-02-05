@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 
 public class ColorRoleRepairThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	StringSelectInteractionEvent event;
 	ArrayList<Integer> numberedMissing = new ArrayList<>();
@@ -39,9 +39,9 @@ public class ColorRoleRepairThreader extends Thread {
 
 	private void repairColorRoles()
 	{
-		if (!tigerguardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
+		if (!tgdb.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 		{
-			tigerguardDB.createGuildColorRolesEntry(event.getGuild().getIdLong());
+			tgdb.createGuildColorRolesEntry(event.getGuild().getIdLong());
 		}
 
 		//Storage for the roles we know
@@ -60,9 +60,9 @@ public class ColorRoleRepairThreader extends Thread {
 		{
 			try
 			{
-				if (tigerguardDB.checkRow("colorRoles", "guild", guild.getIdLong()))
+				if (tgdb.checkRow("colorRoles", "guild", guild.getIdLong()))
 				{
-					Long checked = tigerguardDB.getSingularRole("colorRoles", "color" + (a+1), guild.getIdLong());
+					Long checked = tgdb.getSingularRole("colorRoles", "color" + (a+1), guild.getIdLong());
 
 					Role sample = presentRoles.stream().filter(role -> role.getId().equals(checked.toString())).findFirst().orElse(null);//role.getName().equals(roleName)).findFirst().orElse(null);
 
@@ -121,7 +121,7 @@ public class ColorRoleRepairThreader extends Thread {
 
 		try
 		{
-			tigerguardDB.basicUpdate("colorRoles", " color" + (a+1), roleId, "guild", guild.getIdLong());
+			tgdb.basicUpdate("colorRoles", " color" + (a+1), roleId, "guild", guild.getIdLong());
 		}
 		catch (Exception e)
 		{

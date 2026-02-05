@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.entities.Guild;
 
 public class TimingThread extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	TimeDates dates = new TimeDates();
 	TigerPolls polls = new TigerPolls();
@@ -136,12 +136,12 @@ public class TimingThread extends Thread {
 
 	private void verifyTimesVC()
 	{
-		if (!tigerguardDB.checkForTable("voiceTracker"))
+		if (!tgdb.checkForTable("voiceTracker"))
 		{
-			tigerguardDB.createTable("voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45));");
+			tgdb.createTable("voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45));");
 		}
 
-		ArrayList<Triplet<Long, Long, Long>> voiceItems = tigerguardDB.bootVoiceVerify();
+		ArrayList<Triplet<Long, Long, Long>> voiceItems = tgdb.bootVoiceVerify();
 
 		Long currentTime = System.currentTimeMillis();
 
@@ -165,26 +165,16 @@ public class TimingThread extends Thread {
 
 						if (calc >= 1)
 						{
-							if (!tigerguardDB.checkRow(guild + "xp", "member", member))
+							if (!tgdb.checkRow(guild + "xp", "member", member))
 							{
-								tigerguardDB.insertUserIntoGuildXPTable(guild + "xp", member);
+								tgdb.insertUserIntoGuildXPTable(guild + "xp", member);
 							}
 
 							double amount = (calc <= 56) ? calc : 56;
-							tigerguardDB.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * amount), null, null);
-							/*
-							if (calc <= 56)
-							{
-								tigerguardDB.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * calc), null, null);
-							}
-							else
-							{
-								tigerguardDB.updateGuildRankXp(guildInstance, a, Math.round(15 * 56), null, null);
-							}
-							*/
+							tgdb.updateGuildRankXp(guildInstance, a, (int)Math.round(15 * amount), null, null);
 						}
 
-						tigerguardDB.basicDelete("voiceTracker", "member", member);
+						tgdb.basicDelete("voiceTracker", "member", member);
 					}
 				}
 			});

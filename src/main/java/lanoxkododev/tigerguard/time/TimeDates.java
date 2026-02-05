@@ -12,6 +12,7 @@ import org.javatuples.Quintet;
 import lanoxkododev.tigerguard.ThreadUtilities;
 import lanoxkododev.tigerguard.TigerGuard;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.logging.LogType;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.ColorCodes;
@@ -197,7 +198,7 @@ public class TimeDates {
 			jda.getGuilds().forEach(b -> {
 				if (TigerGuardDB.getTigerGuardDB().checkRow("levelRoles", "guild", b.getIdLong()))
 				{
-					Long channel = TigerGuardDB.getTigerGuardDB().getGuildLevelChannel(b.getIdLong());
+					Long channel = TigerGuardDB.getTigerGuardDB().getValue(DB_Enums.LEVEL_CHAN, "guild", b.getIdLong());
 
 					if (channel != 0L)
 					{

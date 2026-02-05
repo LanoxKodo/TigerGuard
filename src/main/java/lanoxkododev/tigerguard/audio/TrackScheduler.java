@@ -7,6 +7,7 @@ import java.util.Queue;
 import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.TrackInfo;
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.logging.TigerLogs;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.Guild;
@@ -15,7 +16,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 
 public class TrackScheduler {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
     private final GuildMusicManager guildMusicManager;
@@ -88,17 +89,17 @@ public class TrackScheduler {
      */
     private void liveMusicEmbed(TrackInfo info)
     {
-    	if (tigerguardDB.getGuildLiveMusicMessage(guildMusicManager.getGuild().getIdLong()) == 0) deleteMusicEmbed();
+    	if (tgdb.getGuildLiveMusicMessage(guildMusicManager.getGuild().getIdLong()) == 0) deleteMusicEmbed();
 
     	getOutputChannel().sendMessageEmbeds(embedder.musicNowPlaying(info, queue.size())).addActionRow(embedder.musicActionRowButtonProvider()).queue(a -> {
-    		tigerguardDB.setGuildLiveMusicMessage(guildMusicManager.getGuild().getIdLong(), a.getIdLong());
+    		tgdb.setGuildLiveMusicMessage(guildMusicManager.getGuild().getIdLong(), a.getIdLong());
     	});
     }
 
     public void deleteMusicEmbed()
     {
     	Guild guild = guildMusicManager.getGuild();
-    	Long messageId = tigerguardDB.getGuildLiveMusicMessage(guild.getIdLong());
+    	Long messageId = tgdb.getGuildLiveMusicMessage(guild.getIdLong());
     	
     	if (messageId != null && messageId != 0)
     	{
@@ -111,14 +112,14 @@ public class TrackScheduler {
     		}
     		catch (Exception e) {}
     		
-			tigerguardDB.setGuildLiveMusicMessage(guild.getIdLong(), 0L);
+    		tgdb.setGuildLiveMusicMessage(guild.getIdLong(), 0L);
     	}
     }
 
     private GuildMessageChannel getOutputChannel()
     {
     	Guild guild = guildMusicManager.getGuild();
-    	Long defined = tigerguardDB.getGuildMusicChannel(guild.getIdLong());
+    	Long defined = tgdb.getValue(DB_Enums.MUSIC_CHAN, "guild", guild.getIdLong());
 
     	if (defined != null && defined != 0) return guild.getTextChannelById(defined);
 		else return guild.getSelfMember().getVoiceState().getChannel().asGuildMessageChannel();

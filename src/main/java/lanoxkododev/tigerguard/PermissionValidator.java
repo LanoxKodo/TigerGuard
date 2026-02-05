@@ -1,56 +1,44 @@
 package lanoxkododev.tigerguard;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 
 public class PermissionValidator {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	
 	/**
-	 * Check if the user meets the Mid-tier permission requirement for an administrative-like function calling this.
-	 * 
-	 * @param guild - the associated guild.
-	 * @param member - the member which invoked whatever calls this method.
+	 * Check whether the member can use the function that invokes this method.
+	 * @param guild - the guild the command is used in
+	 * @param member - the member invoking the request
+	 * @param lowestPermitted - whether the lowest perm usage (DB_Enums.MOD) should be used
 	 * @return
 	 */
-	public boolean administrativeAccessBase(Guild guild, Member member)
+	public boolean canAccess(Guild guild, Member member, boolean lowestPermitted)
 	{
-		List<Role> roles = member.getRoles();
-		Long roleAdmin = tigerguardDB.getGuildAdminRole(guild.getIdLong());
-		Long rolePrimStaff = tigerguardDB.getGuildStaffRole(guild.getIdLong());
-		Long roleSuppStaff = tigerguardDB.getGuildSupportingStaffRole(guild.getIdLong());
+		if (member == guild.getOwner()) return true;
+		else
+		{
+			Long guildID = guild.getIdLong();
+			
+			List<Role> memberRoles = member.getRoles();
+			ArrayList<Long> permRoles = new ArrayList<>();
+			permRoles.add(tgdb.getValue(DB_Enums.ADMIN, "guild", guildID));
+			permRoles.add(tgdb.getValue(DB_Enums.STAFF, "guild", guildID));
+			
+			if (lowestPermitted) permRoles.add(tgdb.getValue(DB_Enums.MOD, "guild", guildID));
+			
+			for (Long role : permRoles)
+			{
+				if (role != null && memberRoles.contains(guild.getRoleById(role))) return true;
+			}
+		}
 		
-		if (member == guild.getOwner() || roleCheck(roles, guild, roleAdmin) ||
-			roleCheck(roles, guild, rolePrimStaff) || roleCheck(roles, guild, roleSuppStaff)) return true;
-		else return false;
-	}
-	
-	/**
-	 * Check if the user meets the High-tier permission requirement for an administrative-like function calling this.
-	 * 
-	 * @param guild - the associated guild.
-	 * @param member - the member which invoked whatever calls this method.
-	 * @return
-	 */
-	public boolean administrativeAccessElevated(Guild guild, Member member)
-	{
-		List<Role> roles = member.getRoles();
-		Long roleAdmin = tigerguardDB.getGuildAdminRole(guild.getIdLong());
-		Long rolePrimStaff = tigerguardDB.getGuildStaffRole(guild.getIdLong());
-		
-		if (member == guild.getOwner() || roleCheck(roles, guild, roleAdmin) || roleCheck(roles, guild, rolePrimStaff)) return true;
-		else return false;
-	}
-	
-	private boolean roleCheck(List<Role> roles, Guild guild, Long roleID)
-	{
-		if (roleID == null || roleID == 0L) return false;
-		
-		if (roles.contains(guild.getRoleById(roleID))) return true;
-		else return false;
+		return false;
 	}
 }

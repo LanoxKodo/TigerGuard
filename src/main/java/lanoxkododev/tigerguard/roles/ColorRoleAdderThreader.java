@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 
 public class ColorRoleAdderThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	StringSelectInteractionEvent event;
 	ArrayList<String[]> colorSpecs;
@@ -37,9 +37,9 @@ public class ColorRoleAdderThreader extends Thread {
 
 	private void createColorRoles()
 	{
-		if (!tigerguardDB.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
+		if (!tgdb.checkRow("colorRoles", "guild", event.getGuild().getIdLong()))
 		{
-			tigerguardDB.createGuildColorRolesEntry(event.getGuild().getIdLong());
+			tgdb.createGuildColorRolesEntry(event.getGuild().getIdLong());
 		}
 
 		String fillStatementBase = "UPDATE tigerguarddb.colorRoles SET";
@@ -72,7 +72,7 @@ public class ColorRoleAdderThreader extends Thread {
 			}
 		}
 
-		tigerguardDB.setGuildColorRolesEntry(fillStatementBase+fillStatementAdd);
+		tgdb.setGuildColorRolesEntry(fillStatementBase+fillStatementAdd);
 
 		event.getChannel().sendMessageEmbeds(new EmbedMessageFactory().simpleEmbed("Color roles have finished being added to the server", null, null, ColorCodes.FINISHED,
 			"I have finished creating the 18 color roles you requested! Each one was formatted as \"Color Name\".\nYou may change these names and colors however you'd like; " +

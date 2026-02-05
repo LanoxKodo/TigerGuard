@@ -1,6 +1,7 @@
 package lanoxkododev.tigerguard.commands;
 
 import lanoxkododev.tigerguard.TigerGuardDB;
+import lanoxkododev.tigerguard.TigerGuardDB.DB_Enums;
 import lanoxkododev.tigerguard.messages.ColorCodes;
 import lanoxkododev.tigerguard.messages.EmbedMessageFactory;
 import net.dv8tion.jda.api.entities.Role;
@@ -11,7 +12,7 @@ import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 public class VcNSFW implements TGCommand {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 
 	@Override
 	public String getName()
@@ -37,11 +38,13 @@ public class VcNSFW implements TGCommand {
 		if(!event.getMember().getVoiceState().inAudioChannel()) event.replyEmbeds(embedder.voiceErrorEmbed()).setEphemeral(true).queue();
 		else
 		{
+			Long guildID = event.getGuild().getIdLong();
+			
 			AudioChannelUnion vc = event.getMember().getVoiceState().getChannel();
-			if (vc != null && vc.getParentCategory().getIdLong() == tigerGuardDB.getGuildCustomvcCategory(event.getGuild().getIdLong()) &&
-					vc.getIdLong() != tigerGuardDB.getGuildCustomvcChannel(event.getGuild().getIdLong()))
+			if (vc != null && vc.getParentCategory().getIdLong() == (Long)tgdb.getValue(DB_Enums.DYNAMIC_VC_CAT, "guild", guildID) &&
+				vc.getIdLong() != (Long)tgdb.getValue(DB_Enums.DYNAMIC_VC_CHAN, "guild", guildID))
 			{
-				Role nsfwRoleFound = event.getGuild().getRoleById(tigerGuardDB.getGuildNSFWStatusRole(event.getGuild().getIdLong()));
+				Role nsfwRoleFound = event.getGuild().getRoleById(tgdb.getValue(DB_Enums.NSFW, "guild", guildID));
 
 				if (nsfwRoleFound != null && event.getMember().getRoles().contains(nsfwRoleFound))
 				{
@@ -54,7 +57,7 @@ public class VcNSFW implements TGCommand {
 				else
 				{
 					event.replyEmbeds(embedder.simpleEmbed("Permission usage error", null, null, ColorCodes.ERROR,
-						"This command can only be used if you have this server's <@&" + tigerGuardDB.getGuildNSFWStatusRole(event.getGuild().getIdLong()) +
+						"This command can only be used if you have this server's <@&" + tgdb.getValue(DB_Enums.NSFW, "guild", guildID) +
 						"> role")).setEphemeral(true).queue();
 				}
 			}

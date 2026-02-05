@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 
 public class PollReviewThread extends Thread {
 
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	ArrayList<Pair<Long, String>> pollTables;
 	boolean bootRun = false;
@@ -36,7 +36,7 @@ public class PollReviewThread extends Thread {
 		for (int a = 0; a < pollTables.size(); a++)
 		{
 			//Get all polls for the guild using the specified table which is in the format of a string located at value1 of our initial data.
-			ArrayList<Quintet<Long, ChannelType, Long, String, Long>> temp = tigerGuardDB.getPollsData(pollTables.get(a).getValue1(), bootRun);
+			ArrayList<Quintet<Long, ChannelType, Long, String, Long>> temp = tgdb.getPollsData(pollTables.get(a).getValue1(), bootRun);
 
 			//Add each resulting Quartet to the pollData array. Append Guild id to the starting value and push the rest back by 1 to fit into Quintet.
 			for (int b = 0; b < temp.size(); b++)
@@ -55,7 +55,7 @@ public class PollReviewThread extends Thread {
 			if (((expectedEndTime - currentTime) <= 600000) || currentTime > expectedEndTime)
 			{
 				//Update DB to show the poll sent to the new thread is actively been maintained, thus preventing it from being checked again in the next loop should it still be present for some reason.
-				tigerGuardDB.pollUpdateInitiatedCheck(element.getValue0(), element.getValue1());
+				tgdb.pollUpdateInitiatedCheck(element.getValue0(), element.getValue1());
 				new Thread(new PollClosureThread(element)).start();
 			}
 		}

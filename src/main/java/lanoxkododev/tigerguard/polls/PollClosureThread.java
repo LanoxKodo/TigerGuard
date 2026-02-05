@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 public class PollClosureThread extends Thread {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	Long guildVal;
 	Long poll;
 	ChannelType channelType;
@@ -77,7 +77,7 @@ public class PollClosureThread extends Thread {
 
 	private void pollDuo(String original)
 	{
-		Pair<Integer, Integer> results = tigerGuardDB.pollCollectResultsDuo(guildVal, poll);
+		Pair<Integer, Integer> results = tgdb.pollCollectResultsDuo(guildVal, poll);
 		int yay = results.getValue0();
 		int nay = results.getValue1();
 		int totalVotes = yay + nay;
@@ -108,7 +108,7 @@ public class PollClosureThread extends Thread {
 
 	private void pollTrioA(String original)
 	{
-		Triplet<Integer, Integer, Integer> results = tigerGuardDB.pollCollectResultsTrio(guildVal, poll);
+		Triplet<Integer, Integer, Integer> results = tgdb.pollCollectResultsTrio(guildVal, poll);
 		int yay = results.getValue0();
 		int abs = results.getValue1();
 		int nay = results.getValue2();
@@ -143,7 +143,7 @@ public class PollClosureThread extends Thread {
 
 	private void pollTrioB(String original)
 	{
-		Triplet<Integer, Integer, Integer> results = tigerGuardDB.pollCollectResultsTrio(guildVal, poll);
+		Triplet<Integer, Integer, Integer> results = tgdb.pollCollectResultsTrio(guildVal, poll);
 		int yay = results.getValue0();
 		int abs = results.getValue1();
 		int nay = results.getValue2();

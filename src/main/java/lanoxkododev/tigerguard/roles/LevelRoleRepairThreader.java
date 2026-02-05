@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 
 public class LevelRoleRepairThreader extends Thread {
 
-	TigerGuardDB tigerguardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	StringSelectInteractionEvent event;
 	int knownLevelRoles;
@@ -27,7 +27,7 @@ public class LevelRoleRepairThreader extends Thread {
 	{
 		event = inputEvent;
 		guild = inputGuild;
-		knownLevelRoles = tigerguardDB.getGuildKnownLevelUpRoleCount(guild.getIdLong());
+		knownLevelRoles = tgdb.getGuildKnownLevelUpRoleCount(guild.getIdLong());
 	}
 
 	@Override
@@ -44,17 +44,17 @@ public class LevelRoleRepairThreader extends Thread {
 
 		EmbedMessageFactory embedder = new EmbedMessageFactory();
 
-		if (!tigerguardDB.checkRow(guild.getIdLong() + "lvlroles", "guild", guild.getIdLong()))
+		if (!tgdb.checkRow(guild.getIdLong() + "lvlroles", "guild", guild.getIdLong()))
 		{
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("No roles to repair", null, null, ColorCodes.MEH_NOTICE, "It appears I do not see any level roles for this server. If you have not set level roles before then use my other command for creating them; otherwise if this is an error than please report this on my support server!" +
 				"\n\nThis message will auto-delete in 1 minute.")).queue(msg -> msg.delete().queueAfter(60, TimeUnit.SECONDS));
 		}
 		else
 		{
-			boolean voiceTableCheck = tigerguardDB.checkForTable("voiceTracker");
+			boolean voiceTableCheck = tgdb.checkForTable("voiceTracker");
 			if (!voiceTableCheck)
 			{
-				tigerguardDB.createTable("CREATE TABLE tigerguarddb." + "voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45);");
+				tgdb.createTable("CREATE TABLE tigerguarddb." + "voiceTracker (id VARCHAR(45), init VARCHAR(45), guild VARCHAR(45);");
 			}
 
 			event.getChannel().sendMessageEmbeds(embedder.simpleEmbed("I will now begin repairing level roles", null, null, ColorCodes.CONFIRMATION, "For roles that I find need repairing/restoring, they will be named in the format of \"Level_#_Role (Lvl #)\\\".\\nYou may edit these however you wish!\\n\\nPlease wait for me to send a confirmation message of the repair process being completed!" +
@@ -65,9 +65,9 @@ public class LevelRoleRepairThreader extends Thread {
 			{
 				try
 				{
-					if (tigerguardDB.checkIfValueExists("levelRoles", "role"+a, "guild", guild.getIdLong()))
+					if (tgdb.checkIfValueExists("levelRoles", "role"+a, "guild", guild.getIdLong()))
 					{
-						Long checked = tigerguardDB.getGuildSingularLevelUpRole(guild.getIdLong(), "role"+a);
+						Long checked = tgdb.getGuildSingularLevelUpRole(guild.getIdLong(), "role"+a);
 
 						Role sample = presentRoles.stream().filter(role -> role.getId().equals(checked.toString())).findFirst().orElse(null);//role.getName().equals(roleName)).findFirst().orElse(null);
 
@@ -102,7 +102,7 @@ public class LevelRoleRepairThreader extends Thread {
 
 				try
 				{
-					tigerguardDB.setGuildSingularLevelUpRole(fillColumnData);
+					tgdb.setGuildSingularLevelUpRole(fillColumnData);
 				}
 				catch (Exception e)
 				{

@@ -27,7 +27,7 @@ public class ModalEvents extends ListenerAdapter {
 
 	EmbedMessageFactory embedder = new EmbedMessageFactory();
 	RoleManagement manager = new RoleManagement();
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 	TigerPolls tigerPoll = new TigerPolls();
 
@@ -59,9 +59,9 @@ public class ModalEvents extends ListenerAdapter {
 					List<Role> roleAmount = event.getGuild().getRoles();
 					int remainingRoleSlots = 251 - roleAmount.size();
 
-					int currentRoleCount = tigerGuardDB.getGuildKnownLevelUpRoleCount(event.getGuild().getIdLong());
+					int currentRoleCount = tgdb.getGuildKnownLevelUpRoleCount(event.getGuild().getIdLong());
 
-					if (amountToMake < remainingRoleSlots && currentRoleCount < tigerGuardDB.getMaxLevel())
+					if (amountToMake < remainingRoleSlots && currentRoleCount < tgdb.getMaxLevel())
 					{
 						manager.initiateLevelRoleSetup(event, amountToMake, currentRoleCount);
 
@@ -85,7 +85,7 @@ public class ModalEvents extends ListenerAdapter {
 
 				event.getChannel().sendMessageEmbeds(embedder.simpleEmbed(event.getValue("modalPollTitle").getAsString(), null, null, ColorCodes.POLL, event.getValue("modalPollDesc").getAsString()))
 					.setComponents((ActionRow.of(pollButtons))).queue(msg -> {
-						tigerGuardDB.pollCreation(event.getGuild().getIdLong(), msg.getIdLong(), msg.getChannelType(), msg.getChannel().getIdLong(), "Duo");
+						tgdb.pollCreation(event.getGuild().getIdLong(), msg.getIdLong(), msg.getChannelType(), msg.getChannel().getIdLong(), "Duo");
 				});
 
 				event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Poll request finalized", null, null, ColorCodes.FINISHED,
@@ -121,7 +121,7 @@ public class ModalEvents extends ListenerAdapter {
 
 		event.getChannel().sendMessageEmbeds(embedder.simpleEmbed(event.getValue("modalPollTitle").getAsString(), null, null, ColorCodes.POLL, event.getValue("modalPollDesc").getAsString() + append))
 		.setComponents((ActionRow.of(pollButtons))).queue(msg -> {
-			tigerGuardDB.pollCreation(event.getGuild().getIdLong(), msg.getIdLong(), msg.getChannelType(), msg.getChannel().getIdLong(), "Trio" + type);
+			tgdb.pollCreation(event.getGuild().getIdLong(), msg.getIdLong(), msg.getChannelType(), msg.getChannel().getIdLong(), "Trio" + type);
 		});
 
 		event.getHook().sendMessageEmbeds(embedder.simpleEmbed("Poll request finalized", null, null, ColorCodes.FINISHED,

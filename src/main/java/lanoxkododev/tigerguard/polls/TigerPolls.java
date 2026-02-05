@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.channel.ChannelType;
 
 public class TigerPolls {
 
-	TigerGuardDB tigerGuardDB = TigerGuardDB.getTigerGuardDB();
+	TigerGuardDB tgdb = TigerGuardDB.getTigerGuardDB();
 	TigerLogs logger = new TigerLogs();
 
 	/**
@@ -19,7 +19,7 @@ public class TigerPolls {
 	 */
 	public void beginPollReview(boolean bootRunIn)
 	{
-		new Thread(new PollReviewThread(tigerGuardDB.getPollTablesBasicData(), bootRunIn)).start();
+		new Thread(new PollReviewThread(tgdb.getPollTablesBasicData(), bootRunIn)).start();
 	}
 
 	/**
