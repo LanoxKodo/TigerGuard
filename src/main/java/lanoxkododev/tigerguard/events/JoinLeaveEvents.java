@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -112,7 +113,8 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		{
 			long memberCount = members.stream().filter(b -> !b.getUser().isBot()).count();
 
-			guild.getVoiceChannelById(tgdb.getValue(DB_Enums.GUILD_SIZE_CHAN, "guild", guild.getIdLong())).getManager().setName("Members " + memberCount).queue();
+			VoiceChannel sizeChannel = guild.getVoiceChannelById(tgdb.getValue(DB_Enums.GUILD_SIZE_CHAN, "guild", guild.getIdLong()));
+			if (sizeChannel != null) guild.getVoiceChannelById(sizeChannel.getIdLong()).getManager().setName("Members " + memberCount).queue();
 			ArrayUtilities.guildMemberCounter.remove(guild);
 		});
 	}

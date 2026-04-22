@@ -51,7 +51,7 @@ public class ChannelEvents extends ListenerAdapter {
 			Long guildCustomvcCategory = tgdb.getValue(DB_Enums.DYNAMIC_VC_CAT, "guild", guild.getIdLong());
 			Long guildCustomvcChannel = tgdb.getValue(DB_Enums.DYNAMIC_VC_CHAN, "guild", guild.getIdLong());
 
-			if (guildCustomvcChannel != 0 || guildCustomvcChannel != null)
+			if (guildCustomvcChannel != null)
 			{
 				if (event.getChannelJoined() != null)
 				{
