@@ -36,16 +36,18 @@ public class JoinLeaveEvents extends ListenerAdapter {
 
 		if (tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()) != null)
 		{
-			TextChannel channel = guild.getTextChannelById(tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong()));
-
-			if (channel != null)
+			Long channelID = tgdb.getValue(DB_Enums.BOT_CHAN, "guild", guild.getIdLong());
+			
+			if (channelID != null)
 			{
+				TextChannel channel = guild.getTextChannelById(channelID);
+
 				String intro = member.getEffectiveName() + " has joined!";
 
 				if (member.getUser().isBot())
 				{
 					channel.sendMessageEmbeds(embedder.simpleEmbed(null, intro, member.getEffectiveAvatarUrl(), ColorCodes.JOIN,
-						"A bot of some kind. Be advised that I cannot vet bots for their safety features.")).queue();
+						"A bot of some kind. Be advised that I cannot vet other bots for how they function.")).queue();
 				}
 				else
 				{
