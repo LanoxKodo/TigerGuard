@@ -115,8 +115,11 @@ public class JoinLeaveEvents extends ListenerAdapter {
 		{
 			long memberCount = members.stream().filter(b -> !b.getUser().isBot()).count();
 
-			VoiceChannel sizeChannel = guild.getVoiceChannelById(tgdb.getValue(DB_Enums.GUILD_SIZE_CHAN, "guild", guild.getIdLong()));
-			if (sizeChannel != null) guild.getVoiceChannelById(sizeChannel.getIdLong()).getManager().setName("Members " + memberCount).queue();
+			Long channelID = tgdb.getValue(DB_Enums.GUILD_SIZE_CHAN, "guild", guild.getIdLong());
+			VoiceChannel sizeChannel = null;
+			
+			if (channelID != null) sizeChannel = guild.getVoiceChannelById(channelID);
+			if (sizeChannel != null) sizeChannel.getManager().setName("Members " + memberCount).queue();
 			ArrayUtilities.guildMemberCounter.remove(guild);
 		});
 	}
